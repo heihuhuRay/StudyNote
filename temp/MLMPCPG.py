@@ -172,15 +172,12 @@ class mlmpCPG(object):
         #print 'Net[',self.description,'].SN.E.alpha :', self.SN.E.alpha
         #print 'Net[',self.description,'].SN.F.alpha :', self.SN.F.alpha
         #print '\n'
-
-        return; 
     
     #########################
     def fUpdateInitPos(self,CurPos):
         self.joint.init_motor_pos = CurPos
         #print CurPos
         #print("%.3f"% (CurPos))
-        return; 
     
     #########################
     def fUpdateLocomotionNetwork(self,myT,JointPos):

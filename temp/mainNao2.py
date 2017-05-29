@@ -1,43 +1,3 @@
-"""
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Joint name 	Motion                                          Range (degrees) 	Range (radians)
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  1. HeadYaw       Head joint twist (Z)                        -119.5 to 119.5 	-2.0857 to 2.0857
-  2. HeadPitch 	Head joint front and back (Y)               -38.5 to 29.5       -0.6720 to 0.5149
- 
-  3. LShoulderPitch 	Left shoulder joint front and back (Y) 	-119.5 to 119.5 	-2.0857 to 2.0857
-  4. LShoulderRoll 	Left shoulder joint right and left (Z) 	-18 to 76           -0.3142 to 1.3265
-  5. LElbowYaw 	Left shoulder joint twist (X)               -119.5 to 119.5 	-2.0857 to 2.0857
-  6. LElbowRoll 	Left elbow joint (Z)                        -88.5 to -2         -1.5446 to -0.0349
-  7. LWristYaw 	Left wrist joint (X)                        -104.5 to 104.5 	-1.8238 to 1.8238
-  8. LHand         Left hand 	Open and Close 	Open and Close
- 
-  9. LHipYawPitch* 	Left hip joint twist (Y-Z 45deg)          -65.62 to 42.44 	-1.145303 to 0.740810
- 10. LHipRoll      Left hip joint right and left (X)           -21.74 to 45.29 	-0.379472 to 0.790477
- 11. LHipPitch 	Left hip joint front and back (Y)           -88.00 to 27.73 	-1.535889 to 0.484090
- 12. LKneePitch 	Left knee joint (Y)                         -5.29 to 121.04 	-0.092346 to 2.112528
- 13. LAnklePitch 	Left ankle joint front and back (Y)         -68.15 to 52.86 	-1.189516 to 0.922747
- 14. LAnkleRoll 	Left ankle joint right and left (X)         -22.79 to 44.06 	-0.397880 to 0.769001
- 
- 15. RHipYawPitch* 	Right hip joint twist (Y-Z 45deg)         -65.62 to 42.44 	-1.145303 to 0.740810
- 16. RHipRoll      Right hip joint right and left (X)          -45.29 to 21.74 	-0.790477 to 0.379472
- 17. RHipPitch 	Right hip joint front and back (Y)          -88.00 to 27.73 	-1.535889 to 0.484090
- 18. RKneePitch 	Right knee joint (Y)                        -5.90 to 121.47 	-0.103083 to 2.120198
- 19. RAnklePitch 	Right ankle joint front and back (Y)        -67.97 to 53.40 	-1.186448 to 0.932056
- 20. RAnkleRoll 	Right ankle joint right and left (X)        -44.06 to 22.80 	-0.768992 to 0.397935
- 
- 21. RShoulderPitch 	Right shoulder joint front and back (Y)	-119.5 to 119.5 	-2.0857 to 2.0857
- 22. RShoulderRoll 	Right shoulder joint right and left (Z)	-76 to 18           -1.3265 to 0.3142
- 23. RElbowYaw 	Right shoulder joint twist (X)              -119.5 to 119.5 	-2.0857 to 2.0857
- 24. RElbowRoll 	Right elbow joint (Z)                       2 to 88.5           0.0349 to 1.5446
- 25. RWristYaw 	Right wrist joint (X)                       -104.5 to 104.5 	-1.8238 to 1.8238
- 26. RHand         Right hand 	Open and Close 	Open and Close
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% REF for postures
-% http://doc.aldebaran.com/1-14/naoqi/motion/alrobotposture.html#term-predefined-postures
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-"""
 import naoqi
 from naoqi import ALProxy
 import math
@@ -49,10 +9,7 @@ from SetTiming import *
 from MLMPCPG import *
 from NAOMotor import *
 from random import randint
-#from myPloting import * 
-######################################
-#NAOIP = "Orango.local"
-#NAOIP = "nao.local"
+
 #NAOIP = "nao.local"
 
 NAOIP = "0.0.0.0"
@@ -96,22 +53,6 @@ dcm = ALProxy("DCM",NAOIP,PORT)
 ledObj = ALProxy("ALLeds", NAOIP, PORT)
 
 
-
-#############
-
-
-
-#############
-
-#memProxy.subscribeToEvent("RightBumperPressed", "Bumper","onRightBumperPressed");
-
-
-#memProxy.insertData("Device/SubDeviceList/LShoulderPitch/Position/Actuator/IMax",350); #70
-#memProxy.insertData("Device/SubDeviceList/LShoulderPitch/Position/Actuator/Kd",100);
-#memProxy.insertData("Device/SubDeviceList/LShoulderPitch/Position/Actuator/Kp",100);
-
-
- 
 ######################################
 # ALVideoDeviceProxy
 subscriberID = 'matlab'
@@ -138,13 +79,7 @@ vidObj.setFrameRate(subscriberID,10)
     #[11]: bottomAngle (radian).    
 ######################################
    
-#postObj.goToPosture('Crouch',0.9) # Crouch Stand
 time.sleep(1)
-
-#TextObj.say('Please give me the ball'); 
-#pause(4);
-#movObj.setAngles('LHand', 0, 0.5);
-#pause(2);
 
 # Control "RElbowYaw" joint 
 fractionMaxSpeed = 1.0
@@ -154,38 +89,10 @@ fractionMaxSpeed = 1.0
 movObj.setFallManagerEnabled(False) # True False
 time.sleep(1)
 
-# movObj.setStiffnesses('Body',0.5);
-# movObj.setAngles('Body', zeros(number_cpg,1), fractionMaxSpeed/10);
-# pause(5);
-
-# Move the arm into home-throwing-position 
-#teta=[0.0*math.pi/180.0, 30.0*math.pi/180.0, -90.0*math.pi/180.0, -85.0*math.pi/180.0, 90.0*math.pi/180.0, 1] 
-
-#teta=[0.0*math.pi/180.0, 30.0*math.pi/180.0, -90.0*math.pi/180.0, -85.0*math.pi/180.0, 90.0*math.pi/180.0, 1] 
-
-#teta=[20 0 -90 -85 90 0];
-
-#movObj.setAngles('LArm', teta , 0.3)
-
-#pause(2);
-
 # http://doc.aldebaran.com/2-1/family/robots/postures_robot.html#robot-postures
 postObj.goToPosture("StandInit",0.8)
 time.sleep(2)
 
-#StandInit
-#StandZero
-#Crouch
-######################################
-# "RearTactileON" OPEN THE HAND TO PICK THE BALL 
-# while 1
-# RearTactileON = memProxy.getData('Device/SubDeviceList/Head/Touch/Rear/Sensor/Value'); 
-# if (RearTactileON) 
-#     movObj.setAngles('LHand', 1, 0.5);
-#     pause(1);
-#     break; 
-# end
-# end
 ######################################
 # ALMemory 
 ReadlistData = [
@@ -223,111 +130,7 @@ print "listVal:" ,listValRead
 #print "listVal[1]:" ,listValRead[1] 
 
 ###################################### 
-"""
-# ALMemory 
-memProxy.WritelistData = [
-              ## LeftEars 
-              ["Device/SubDeviceList/Ears/Led/Left/0Deg/Actuator/Value",  1.0],# 0
-              ['Device/SubDeviceList/Ears/Led/Left/36Deg/Actuator/Value', 1.0],# 1
-              ["Device/SubDeviceList/Ears/Led/Left/72Deg/Actuator/Value", 1.0],#2
-              ["Device/SubDeviceList/Ears/Led/Left/108Deg/Actuator/Value",1.0],#3
-              ["Device/SubDeviceList/Ears/Led/Left/144Deg/Actuator/Value",1.0],#4
-              ["Device/SubDeviceList/Ears/Led/Left/180Deg/Actuator/Value",1.0],#5
-              ["Device/SubDeviceList/Ears/Led/Left/216Deg/Actuator/Value",1.0],#6
-              ["Device/SubDeviceList/Ears/Led/Left/252Deg/Actuator/Value",1.0],#7
-              ["Device/SubDeviceList/Ears/Led/Left/288Deg/Actuator/Value",1.0],#8
-              ["Device/SubDeviceList/Ears/Led/Left/324Deg/Actuator/Value",1.0],#9
-              ## RightEars
-              ["Device/SubDeviceList/Ears/Led/Right/0Deg/Actuator/Value",  1.0],#10
-              ["Device/SubDeviceList/Ears/Led/Right/36Deg/Actuator/Value",1.0],#11
-              ["Device/SubDeviceList/Ears/Led/Right/72Deg/Actuator/Value",1.0],#12
-              ["Device/SubDeviceList/Ears/Led/Right/108Deg/Actuator/Value",1.0],#13
-              ["Device/SubDeviceList/Ears/Led/Right/144Deg/Actuator/Value",1.0],#14
-              ["Device/SubDeviceList/Ears/Led/Right/180Deg/Actuator/Value",1.0],#15
-              ["Device/SubDeviceList/Ears/Led/Right/216Deg/Actuator/Value",1.0],#16
-              ["Device/SubDeviceList/Ears/Led/Right/252Deg/Actuator/Value",1.0],#17
-              ["Device/SubDeviceList/Ears/Led/Right/288Deg/Actuator/Value",1.0],#18
-              ["Device/SubDeviceList/Ears/Led/Right/324Deg/Actuator/Value",1.0]#19
-           ]
 
-#memProxy.insertListData(memProxy.WritelistData)
-#memProxy.insertData('Ears/Led/Left/0Deg/Actuator/Value', 0.9)
-#time.sleep(2)
-"""
-############################################
-"""
-# Create a new group
-RightEars = [
-"Ears/Led/Right/0Deg/Actuator/Value",
-"Ears/Led/Right/36Deg/Actuator/Value",
-"Ears/Led/Right/72Deg/Actuator/Value",
-"Ears/Led/Right/108Deg/Actuator/Value",
-"Ears/Led/Right/144Deg/Actuator/Value",
-"Ears/Led/Right/180Deg/Actuator/Value",
-"Ears/Led/Right/216Deg/Actuator/Value",
-"Ears/Led/Right/252Deg/Actuator/Value",
-"Ears/Led/Right/288Deg/Actuator/Value",
-"Ears/Led/Right/324Deg/Actuator/Value"]
-ledObj.createGroup("RightEars",RightEars)
-# Switch the new group on
-ledObj.off("RightEars")
-
-# Create a new group
-LeftEars = [
-"Ears/Led/Left/0Deg/Actuator/Value",
-"Ears/Led/Left/36Deg/Actuator/Value",
-"Ears/Led/Left/72Deg/Actuator/Value",
-"Ears/Led/Left/108Deg/Actuator/Value",
-"Ears/Led/Left/144Deg/Actuator/Value",
-"Ears/Led/Left/180Deg/Actuator/Value",
-"Ears/Led/Left/216Deg/Actuator/Value",
-"Ears/Led/Left/252Deg/Actuator/Value",
-"Ears/Led/Left/288Deg/Actuator/Value",
-"Ears/Led/Left/324Deg/Actuator/Value"]
-ledObj.createGroup("LeftEars",LeftEars)
-# Switch the new group on
-ledObj.off("LeftEars")
-
-# Create a new group
-LeftEarsFront = [
-"Ears/Led/Left/36Deg/Actuator/Value",
-"Ears/Led/Left/72Deg/Actuator/Value"]
-ledObj.createGroup("LeftEarsFront",LeftEarsFront)
-
-# Create a new group
-LeftEarsBack = [
-"Ears/Led/Left/288Deg/Actuator/Value",
-"Ears/Led/Left/252Deg/Actuator/Value"]
-ledObj.createGroup("LeftEarsBack",LeftEarsBack)
-
-# Create a new group
-LeftEarsMidle = [
-"Ears/Led/Left/144Deg/Actuator/Value",
-"Ears/Led/Left/180Deg/Actuator/Value"]
-ledObj.createGroup("LeftEarsMidle",LeftEarsMidle)
-
-# Create a new group
-RightEarsFront = [
-"Ears/Led/Right/36Deg/Actuator/Value",
-"Ears/Led/Right/72Deg/Actuator/Value"]
-ledObj.createGroup("RightEarsFront",RightEarsFront)
-
-# Create a new group
-RightEarsBack = [
-"Ears/Led/Right/288Deg/Actuator/Value",
-"Ears/Led/Right/252Deg/Actuator/Value"]
-ledObj.createGroup("RightEarsBack",RightEarsBack)
-
-# Create a new group
-RightEarsMidle = [
-"Ears/Led/Right/144Deg/Actuator/Value",
-"Ears/Led/Right/180Deg/Actuator/Value"]
-ledObj.createGroup("RightEarsMidle",RightEarsMidle)
-
-
-#ledObj.on("LeftEarsFront")LeftEarsMidle LeftEarsBack
-"""
-###################################### 
 # "MiddleTactileON" CLOSE THE HAND TO PICK THE BALL 
 while True:
     MiddleTactileON = memProxy.getData('Device/SubDeviceList/Head/Touch/Middle/Sensor/Value')
@@ -336,7 +139,7 @@ while True:
         time.sleep(1)
         break
 ######################################
-######################################
+
 
 myT = fSetTiming()
 #fPrintTiming(myT)
@@ -480,16 +283,30 @@ L_ANKLE_ROLL,R_HIP_YAW_PITCH,R_HIP_ROLL,R_HIP_PITCH,R_KNEE_PITCH,R_ANKLE_PITCH,
 R_ANKLE_ROLL,R_SHOULDER_PITCH,R_SHOULDER_ROLL,R_ELBOW_YAW,R_ELBOW_ROLL,
 R_WRIST_YAW,R_HAND
 """
-CurPos = movObj.getAngles('Body',True)
+
+CurPos = movObj.getAngles('Body',True)  # ALMotionProxy::getAngles(const AL::ALValue& names, const bool& useSensors)
+                                        #Parameters:	
+                                        #   names – Names the joints, chains, “Body”, “JointActuators”, “Joints” or “Actuators”.
+                                        #   useSensors – If true, sensor angles will be returned
+                                        #Returns:	Joint angles in radians.
 
 for i in range(0, len(myCont)):
     myCont[i].fUpdateInitPos(CurPos[i])
-
+#?? what are these four updates used for???
+#?? how does this init value come from???
 myCont[L_HIP_ROLL].fUpdateInitPos(2*math.pi/180.0)
 myCont[R_HIP_ROLL].fUpdateInitPos(-2*math.pi/180.0)
 myCont[L_ANKLE_ROLL].fUpdateInitPos(2*math.pi/180.0)
 myCont[R_ANKLE_ROLL].fUpdateInitPos(-2*math.pi/180.0)
 
+myCont[L_HIP_PITCH].fUpdateInitPos(-0.4) # -0.4
+myCont[R_HIP_PITCH].fUpdateInitPos(myCont[L_HIP_PITCH].joint.init_motor_pos) #??already updated in L294, why again???
+
+myCont[L_KNEE_PITCH].fUpdateInitPos(0.7) # 0.7
+myCont[R_KNEE_PITCH].fUpdateInitPos(myCont[L_KNEE_PITCH].joint.init_motor_pos)
+
+myCont[L_ANKLE_PITCH].fUpdateInitPos(-0.35) # -0.35
+myCont[R_ANKLE_PITCH].fUpdateInitPos(myCont[L_ANKLE_PITCH].joint.init_motor_pos)
 """
  9. LHipYawPitch* 	Left hip joint twist (Y-Z 45deg)          -65.62 to 42.44 	-1.145303 to 0.740810
 10. LHipRoll      Left hip joint right and left (X)           -21.74 to 45.29 	-0.379472 to 0.790477
@@ -497,24 +314,8 @@ myCont[R_ANKLE_ROLL].fUpdateInitPos(-2*math.pi/180.0)
 12. LKneePitch 	Left knee joint (Y)                         -5.29 to 121.04 	-0.092346 to 2.112528
 13. LAnklePitch 	Left ankle joint front and back (Y)         -68.15 to 52.86 	-1.189516 to 0.922747
 14. LAnkleRoll 	Left ankle joint right and left (X)         -22.79 to 44.06 	-0.397880 to 0.769001
- """
+"""
 
-myCont[L_HIP_PITCH].fUpdateInitPos(-0.4) # -0.4
-myCont[R_HIP_PITCH].fUpdateInitPos(myCont[L_HIP_PITCH].joint.init_motor_pos)
-
-myCont[L_KNEE_PITCH].fUpdateInitPos(0.7) # 0.7
-myCont[R_KNEE_PITCH].fUpdateInitPos(myCont[L_KNEE_PITCH].joint.init_motor_pos)
-
-myCont[L_ANKLE_PITCH].fUpdateInitPos(-0.35) # -0.35
-myCont[R_ANKLE_PITCH].fUpdateInitPos(myCont[L_ANKLE_PITCH].joint.init_motor_pos)
-
-
-
-##print len(CurPos)  
-
-#for i in range(0, len(myCont)):
-#    myCont[i].fPrint()
- 
 myCont[L_SHOULDER_PITCH].W_E_SN2MN=-0.0
 myCont[L_SHOULDER_PITCH].W_F_SN2MN=-0.0
 
