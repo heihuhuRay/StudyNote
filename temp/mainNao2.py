@@ -30,6 +30,18 @@ global myCont,CurPos,myT
 All_Command=[]
 All_Sensor=[]
 
+#################################################################################################################################
+####################################### My variables ############################################################################
+#################################################################################################################################
+left_foot_time_list = []
+right_foot_time_list = []
+left_knee_time_list = []
+right_knee_time_list = []
+#################################################################################################################################
+####################################### My variables ############################################################################
+#################################################################################################################################
+
+
 ######################################
 # Connect to the module ALMotionProxy 
 movObj = ALProxy("ALMotion",NAOIP,PORT)
@@ -87,7 +99,7 @@ fractionMaxSpeed = 1.0
 
 # Disable Fall Manager 
 TextObj.say('Attention, Fall Manager is Disabled.') 
-#movObj.setFallManagerEnabled(False) # True False
+movObj.setFallManagerEnabled(False) # True False
 time.sleep(1)
 
 # http://doc.aldebaran.com/2-1/family/robots/postures_robot.html#robot-postures
@@ -343,7 +355,7 @@ def calc_mean_sensor_value(parameter_list, parameter_num):
 ############################################################################################################################
 MAT_Iinj = [];
 num_loop_times = 1
-for I in range(0, int(myT.N_Loop/2)):
+for I in range(0, int(myT.N_Loop/50)):
     t = I*myT.T;
     print("****** I = ", I)
     #?? as I understand the InjCurrent is just a constant factor which value is 0???
@@ -421,8 +433,7 @@ for I in range(0, int(myT.N_Loop/2)):
     mean_value_right_foot = calc_mean_sensor_value(total_right_FSR_dir_list, 1)
     
     # Record delta_time between each tap on the ground
-    left_foot_time_list = []
-    right_foot_time_list = []
+    
     if(mean_value_left_foot > 0.3):
         # the left foot is taping the ground
         t = time.time()
@@ -435,8 +446,7 @@ for I in range(0, int(myT.N_Loop/2)):
     angle_left_knee_pitch = CurPos[11] # 11 means L_Knee_Pitch, refer to CurPos,
     angle_right_knee_pitch = CurPos[17] # Note! Starting from 0
     # Record delta_time of Hip joints
-    left_knee_time_list = []
-    right_knee_time_list = []
+    
     if(angle_left_knee_pitch > 0.7):
         t = time.time()
         left_knee_time_list.append(t)
@@ -605,12 +615,22 @@ movObj.setStiffnesses('Body',0.0)
 def calc_delta_t(parameter_list):
     delta_t_list = []
     for i in range(len(parameter_list) - 1):
-        interval_t = parameter_list(i+1) - parameter_list(i)
+        interval_t = parameter_list[i+1] - parameter_list[i]
         delta_t_list.append(interval_t)
+    print(delta_t_list)
     delta_t = np.mean(delta_t_list)
     return delta_t
 
+delta_t_left_foot = calc_delta_t(left_foot_time_list)
+delta_t_right_foot = calc_delta_t(right_foot_time_list)
+delta_t_left_knee_pitch = calc_delta_t(left_knee_time_list)
+delta_t_right_knee_pitch = calc_delta_t(right_knee_time_list)
 
+print('left_foot: ', delta_t_left_foot)
+print('right_foot: ', delta_t_right_foot)
+print('left_knee', delta_t_left_knee_pitch)
+print('right_knee', delta_t_right_knee_pitch)
+#f_left_foot = 1/delta_t_left_foot
 ############################################################################################################################
 ###################################### My 2nd contribution ends ############################################################
 ############################################################################################################################    
