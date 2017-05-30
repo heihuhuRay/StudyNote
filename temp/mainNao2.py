@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import naoqi
 from naoqi import ALProxy
 import math
@@ -12,13 +13,13 @@ from random import randint
 
 #NAOIP = "nao.local"
 
-NAOIP = "0.0.0.0"
+NAOIP = "169.254.28.144"
 
-PORT= 9559 ; 
+PORT = 9559
 
-number_cpg = 26 ;
+number_cpg = 26
 
-global All_Command 
+global All_Command
 global All_Sensor
 
 global LFsrFL,LFsrFR,LFsrBL,LFsrBR,RFsrFL,RFsrFR,RFsrBL,RFsrBR,LHandBackSensor,LHandLeftSensor,LHandRightSensor,RHandBackSensor,RHandLeftSensor,RHandRightSensor 
@@ -85,11 +86,12 @@ time.sleep(1)
 fractionMaxSpeed = 1.0
 
 # Disable Fall Manager 
-# TextObj.say('Attention, Fall Manager is Disabled.');  
-movObj.setFallManagerEnabled(False) # True False
+TextObj.say('Attention, Fall Manager is Disabled.') 
+#movObj.setFallManagerEnabled(False) # True False
 time.sleep(1)
 
 # http://doc.aldebaran.com/2-1/family/robots/postures_robot.html#robot-postures
+TextObj.say('Initial posture: standing')
 postObj.goToPosture("StandInit",0.8)
 time.sleep(2)
 
@@ -125,7 +127,7 @@ ReadlistData = [
 
 
 listValRead = memProxy.getListData( ReadlistData )
-print "listVal:" ,listValRead 
+print("listVal:" ,listValRead)
 #print "listVal[0]:" ,listValRead[0] 
 #print "listVal[1]:" ,listValRead[1] 
 
@@ -277,11 +279,11 @@ myCont[L_ANKLE_PITCH].fSetPatternRG(PatternOsc) # PatternPL1 PatternOsc3 Pattern
 #myCont[L_SHOULDER_PITCH].fPrint()
 
 """
-HEAD_YAW,HEAD_PITCH,L_SHOULDER_PITCH,L_SHOULDER_ROLL,L_ELBOW_YAW,L_ELBOW_ROLL,
-L_WRIST_YAW,L_HAND,L_HIP_YAW_PITCH,L_HIP_ROLL,L_HIP_PITCH,L_KNEE_PITCH,L_ANKLE_PITCH,
-L_ANKLE_ROLL,R_HIP_YAW_PITCH,R_HIP_ROLL,R_HIP_PITCH,R_KNEE_PITCH,R_ANKLE_PITCH,
+0_HEAD_YAW, 1_HEAD_PITCH, 2_L_SHOULDER_PITCH,L_SHOULDER_ROLL,L_ELBOW_YAW,L_ELBOW_ROLL,
+L_WRIST_YAW,L_HAND,L_HIP_YAW_PITCH,L_HIP_ROLL,L_HIP_PITCH,11_L_KNEE_PITCH,L_ANKLE_PITCH,
+L_ANKLE_ROLL,R_HIP_YAW_PITCH,R_HIP_ROLL,R_HIP_PITCH,17_R_KNEE_PITCH,R_ANKLE_PITCH,
 R_ANKLE_ROLL,R_SHOULDER_PITCH,R_SHOULDER_ROLL,R_ELBOW_YAW,R_ELBOW_ROLL,
-R_WRIST_YAW,R_HAND
+R_WRIST_YAW,25_R_HAND
 """
 
 CurPos = movObj.getAngles('Body',True)  # ALMotionProxy::getAngles(const AL::ALValue& names, const bool& useSensors)
@@ -292,15 +294,17 @@ CurPos = movObj.getAngles('Body',True)  # ALMotionProxy::getAngles(const AL::ALV
 
 for i in range(0, len(myCont)):
     myCont[i].fUpdateInitPos(CurPos[i])
-#?? what are these four updates used for???
-#?? how does this init value come from???
+    # these init values are for the CPGs that are not used
+# how does this init value come from?
+# according to experience, it is the initial value
 myCont[L_HIP_ROLL].fUpdateInitPos(2*math.pi/180.0)
 myCont[R_HIP_ROLL].fUpdateInitPos(-2*math.pi/180.0)
 myCont[L_ANKLE_ROLL].fUpdateInitPos(2*math.pi/180.0)
 myCont[R_ANKLE_ROLL].fUpdateInitPos(-2*math.pi/180.0)
 
 myCont[L_HIP_PITCH].fUpdateInitPos(-0.4) # -0.4
-myCont[R_HIP_PITCH].fUpdateInitPos(myCont[L_HIP_PITCH].joint.init_motor_pos) #??already updated in L294, why again???
+myCont[R_HIP_PITCH].fUpdateInitPos(myCont[L_HIP_PITCH].joint.init_motor_pos) 
+#already updated in L294, here is just for understand that the init position just move its Left leg 
 
 myCont[L_KNEE_PITCH].fUpdateInitPos(0.7) # 0.7
 myCont[R_KNEE_PITCH].fUpdateInitPos(myCont[L_KNEE_PITCH].joint.init_motor_pos)
@@ -315,7 +319,7 @@ myCont[R_ANKLE_PITCH].fUpdateInitPos(myCont[L_ANKLE_PITCH].joint.init_motor_pos)
 13. LAnklePitch 	Left ankle joint front and back (Y)         -68.15 to 52.86 	-1.189516 to 0.922747
 14. LAnkleRoll 	Left ankle joint right and left (X)         -22.79 to 44.06 	-0.397880 to 0.769001
 """
-
+# the weight is 0 because we don't want to use the feedback from SN(sensor neuron)
 myCont[L_SHOULDER_PITCH].W_E_SN2MN=-0.0
 myCont[L_SHOULDER_PITCH].W_F_SN2MN=-0.0
 
@@ -324,14 +328,25 @@ myCont[L_SHOULDER_ROLL].W_F_SN2MN=-0.0
     
 #############################
 for i in range(0, len(myCont)):
-    myCont[i].fUpdateLocomotionNetwork(myT,CurPos[i])
+    myCont[i].fUpdateLocomotionNetwork(myT, CurPos[i])
 #############################
 time1 = time.time()
 
+def calc_mean_sensor_value(parameter_list, parameter_num):
+    sum_sensor_value = 0
+    for sensor_dir in parameter_list:
+        sum_sensor_value = sum_sensor_value + memProxy.getData(sensor_dir)
+    mean_value = sum_sensor_value/parameter_num
+    return mean_value
+############################################################################################################################
+################################# main start from here #####################################################################
+############################################################################################################################
 MAT_Iinj = [];
+num_loop_times = 1
 for I in range(0, int(myT.N_Loop/2)):
     t = I*myT.T;
-
+    print("****** I = ", I)
+    #?? as I understand the InjCurrent is just a constant factor which value is 0???
     # #################
     # ExtInjCurr
     # #################
@@ -372,11 +387,6 @@ for I in range(0, int(myT.N_Loop/2)):
     for ii in [L_HIP_PITCH, L_KNEE_PITCH, R_ANKLE_PITCH]:
         myCont[ii].RG.F.InjCurrent_value = -1*ExtInjCurr2* myCont[ii].RG.F.InjCurrent_MultiplicationFactor
         myCont[ii].RG.E.InjCurrent_value = +1*ExtInjCurr2* myCont[ii].RG.E.InjCurrent_MultiplicationFactor
-
-    """
-    for i in range(0, len(myCont)):
-        myCont[i].fUpdateLocomotionNetwork(myT,CurPos[i])
-    """
     
     for i in [L_HIP_ROLL, L_ANKLE_ROLL,R_HIP_ROLL, R_ANKLE_ROLL,R_HIP_PITCH, R_KNEE_PITCH, L_ANKLE_PITCH,L_HIP_PITCH, L_KNEE_PITCH, R_ANKLE_PITCH]:
         myCont[i].fUpdateLocomotionNetwork(myT,CurPos[i])
@@ -386,27 +396,74 @@ for I in range(0, int(myT.N_Loop/2)):
         MotorCommand[i] = myCont[i].joint.joint_motor_signal
     
     movObj.setAngles('Body', MotorCommand , fractionMaxSpeed)
-    ##movObj.angleInterpolation('Body',MotorCommand , 0.03, True)
-    
+    #movObj.angleInterpolation('Body',MotorCommand , 0.03, True)
 
-    # time.sleep(myT.T)
+############################################################################################################################
+###################################### My contribution starts ##############################################################
+############################################################################################################################
+    print('Loop:  ', num_loop_times)
+    num_loop_times = num_loop_times + 1
+
+    left_FSR_dir_list = [   'Device/SubDeviceList/LFoot/FSR/FrontLeft/Sensor/Value',
+                            'Device/SubDeviceList/LFoot/FSR/FrontRight/Sensor/Value',
+                            'Device/SubDeviceList/LFoot/FSR/RearLeft/Sensor/Value'
+                            'Device/SubDeviceList/LFoot/FSR/RearRight/Sensor/Value'
+                        ]
+    right_FSR_dir_list = [  'Device/SubDeviceList/RFoot/FSR/FrontLeft/Sensor/Value',
+                            'Device/SubDeviceList/RFoot/FSR/FrontRight/Sensor/Value',
+                            'Device/SubDeviceList/RFoot/FSR/RearLeft/Sensor/Value'
+                            'Device/SubDeviceList/RFoot/FSR/RearRight/Sensor/Value'
+                        ]
+    total_left_FSR_dir_list  = ['Device/SubDeviceList/LFoot/FSR/TotalWeight/Sensor/Value']
+    total_right_FSR_dir_list = ['Device/SubDeviceList/RFoot/FSR/TotalWeight/Sensor/Value']
     
-     # Read motor angel from robot joints 
+    mean_value_left_foot  = calc_mean_sensor_value(total_left_FSR_dir_list, 1)
+    mean_value_right_foot = calc_mean_sensor_value(total_right_FSR_dir_list, 1)
+    
+    # Record delta_time between each tap on the ground
+    left_foot_time_list = []
+    right_foot_time_list = []
+    if(mean_value_left_foot > 0.3):
+        # the left foot is taping the ground
+        t = time.time()
+        left_foot_time_list.append(t)
+    if(mean_value_right_foot > 0.3):
+        # the right foot is taping the ground
+        t = time.time()
+        right_foot_time_list.append(t)
+
+    angle_left_knee_pitch = CurPos[11] # 11 means L_Knee_Pitch, refer to CurPos,
+    angle_right_knee_pitch = CurPos[17] # Note! Starting from 0
+    # Record delta_time of Hip joints
+    left_knee_time_list = []
+    right_knee_time_list = []
+    if(angle_left_knee_pitch > 0.7):
+        t = time.time()
+        left_knee_time_list.append(t)
+    if(angle_right_knee_pitch > 0.7):
+        t = time.time()
+        right_knee_time_list.append(t)
+
+    #!! frequency of joints, f1
+    #print('Right Knee Pitch Sensor position value:', memProxy.getData('Device/SubDeviceList/RKneePitch/Position/Sensor/Value'))
+    #!! frequency of foot, f2
+    #print('Right Foot left front Sensor value:', memProxy.getData('Device/SubDeviceList/RFoot/FSR/FrontLeft/Sensor/Value'))
+
+############################################################################################################################
+###################################### My contribution ends ################################################################
+############################################################################################################################    
+    
+    # Read motor angel from robot joints 
     CurPos = movObj.getAngles('Body',True)
     
     All_Command.append(MotorCommand[:]) 
     All_Sensor.append(CurPos)
-    
-    #data2print1.append(myCont[L_HIP_ROLL].SN.E.o)
-    #data2print2.append(myCont[L_HIP_ROLL].SN.F.o)
-    
-    ######################################
-    
-    listValRead = memProxy.getListData( ReadlistData )
+    listValRead = memProxy.getListData(ReadlistData)
 
     # "RearTactileON" stop 
+    # 摸摸头
     if (listValRead[1]):
-        print 'Walking has been stoped by toutching the rear tactile head sensor.\n'
+        print('Walking has been stoped by toutching the rear tactile head sensor.\n')
         break
     
     """    
@@ -532,7 +589,7 @@ for I in range(0, int(myT.N_Loop/2)):
     time2 = time.time()
     while (time2 - time1)<0.04 :
         time2 = time.time()
-    print 'time diff: ', time2 - time1
+    #print('time diff: ', time2 - time1)
     #time_diff  = time2 - time1
     time1 = time2 
 
@@ -542,9 +599,25 @@ for I in range(0, int(myT.N_Loop/2)):
 postObj.goToPosture("Crouch",0.8)
 time.sleep(2)
 movObj.setStiffnesses('Body',0.0)
+############################################################################################################################
+###################################### My 2nd contribution starts ##########################################################
+############################################################################################################################
+def calc_delta_t(parameter_list):
+    delta_t_list = []
+    for i in range(len(parameter_list) - 1):
+        interval_t = parameter_list(i+1) - parameter_list(i)
+        delta_t_list.append(interval_t)
+    delta_t = np.mean(delta_t_list)
+    return delta_t
 
 
-# Print motion data ..
+############################################################################################################################
+###################################### My 2nd contribution ends ############################################################
+############################################################################################################################    
+
+
+
+# Save motion data into files
 ##############################
 f = open('AllCommands', 'w')
 s = str(All_Command)
@@ -555,39 +628,3 @@ f = open('AllAngels', 'w')
 s = str(All_Sensor)
 f.write(s)
 f.close()
-
-
-##############################
-
-
-#plt.plot( range(len(data2print1)), data2print1,'b', range(len(data2print2)),data2print2,'r')
-#plt.grid(True)
-#plt.show()
-
-
-#fPlotJointCommandSensor(All_Command,All_Sensor,L_SHOULDER_ROLL,'L_SHOULDER_ROLL')
-#fPlotJointCommandSensor(All_Command,All_Sensor,L_SHOULDER_PITCH,'L_SHOULDER_PITCH')
-
-
-#print MAT_Iinj
-""""    
-        if (t >= myTime.T1 && t < myTime.T2) 
-        ExtInjCurr = 1;
-  %  elseif (t >= myTime.T3 && t < myTime.T4)
-  %      ExtInjCurr = 4.5;
-  %  elseif (t >= myTime.T5 && t < myTime.T6)
-  %      ExtInjCurr = -4.5;        
-    else 
-        ExtInjCurr = 0;
-    end
-    MAT_Iinj=[MAT_Iinj, ExtInjCurr];
-    if (t > myTime.T2) 
-    movObj.setStiffnesses('LArm',0.8);
-    end
-    
-"""
-
-#memProxy.unsubscribeToEvent("onRightBumperPressed", "Bumper");
-
-
-

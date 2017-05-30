@@ -1,3 +1,4 @@
+# -*- encoding: UTF-8 -*- 
 from random import randint
 #from enum import Enum
 import math
@@ -191,13 +192,13 @@ class mlmpCPG(object):
     #########################
     def fUpdateLocomotionNetworkSN(self,JointPos):
         
-        Ealpha = self.SN.E.alpha
-        Falpha = self.SN.F.alpha
-        Etheta = self.SN.E.theta
-        Ftheta = self.SN.F.theta
+        E_alpha = self.SN.E.alpha
+        F_alpha = self.SN.F.alpha
+        E_theta = self.SN.E.theta
+        F_theta = self.SN.F.theta
         
-        self.SN.E.o = 1.0/( 1.0+math.exp( Ealpha*(Etheta - JointPos) ) )
-        self.SN.F.o = 1.0/( 1.0+math.exp( Falpha*(Ftheta - JointPos) ) ) 
+        self.SN.E.o = 1.0/( 1.0+math.exp( E_alpha*(E_theta - JointPos) ) )
+        self.SN.F.o = 1.0/( 1.0+math.exp( F_alpha*(F_theta - JointPos) ) ) 
         
         return; 
     #########################
@@ -205,35 +206,36 @@ class mlmpCPG(object):
     def fUpdateLocomotionNetworkRG(self,myT):
         
         # E
-        tau_m_E = self.RG.E.tau_m ;
-        tau_s_E = self.RG.E.tau_s ;
+        tau_m_E = self.RG.E.tau_m
+        tau_s_E = self.RG.E.tau_s
 
-        sigma_f_E = self.RG.E.sigma_f; 
-        sigma_s_E = self.RG.E.sigma_s; 
+        sigma_f_E = self.RG.E.sigma_f 
+        sigma_s_E = self.RG.E.sigma_s 
 
-        A_f_E = self.RG.E.A_f ;
-        Es_E  = self.RG.E.Es ;
-        V_E = self.RG.E.V ;
-        q_E = self.RG.E.q ;
-        InjCurr_E = self.RG.E.InjCurrent_value ;
+        A_f_E = self.RG.E.A_f
+        Es_E  = self.RG.E.Es
+        V_E = self.RG.E.V
+        q_E = self.RG.E.q
+        InjCurr_E = self.RG.E.InjCurrent_value
 
 
         # F
-        tau_m_F = self.RG.F.tau_m ;
-        tau_s_F = self.RG.F.tau_s ;
+        tau_m_F = self.RG.F.tau_m
+        tau_s_F = self.RG.F.tau_s
 
-        sigma_f_F = self.RG.F.sigma_f; 
-        sigma_s_F = self.RG.F.sigma_s; 
+        sigma_f_F = self.RG.F.sigma_f 
+        sigma_s_F = self.RG.F.sigma_s 
 
-        A_f_F = self.RG.F.A_f ;
-        Es_F  = self.RG.F.Es ;
-        V_F = self.RG.F.V ;
-        q_F = self.RG.F.q ;
-        InjCurr_F = self.RG.F.InjCurrent_value ;
-        
+        A_f_F = self.RG.F.A_f
+        Es_F  = self.RG.F.Es
+        V_F = self.RG.F.V
+        q_F = self.RG.F.q
+        InjCurr_F = self.RG.F.InjCurrent_value
+        #?? what is this loop used for???
+        # and what does k1 l1 k2 l2 kk1 kk2 mean???
         for J in range(0,10):
-            # (-1/tm)*( V-Af*tanh(sigma_s/A_f*V)+q-InjCurr);
-            # dq/dt = (1/tau_s)*(-q_E+sigma_s*(V-Es));
+            # (-1/tm)*( V-Af*tanh(sigma_s/A_f*V)+q-InjCurr)
+            # dq/dt = (1/tau_s)*(-q_E+sigma_s*(V-Es))
 
             k1 = myT.h * ( (-1/tau_m_F) * ( (V_F+0   ) - A_f_F*math.tanh( (sigma_f_F/A_f_F)*(V_F+0   ) ) + (q_F+0   ) - InjCurr_F ) )
             l1 = myT.h * ( ( 1/tau_s_F) * (-(q_F+0   ) + sigma_s_F * ( V_F - Es_F ) ) )
@@ -255,8 +257,8 @@ class mlmpCPG(object):
 
             ######
 
-            # (-1/tm)*( V-Af*tanh(sigma_s/A_f*V)+q-InjCurr);
-            # dq_E/dt = (1/tau_s)*(-q+sigma_s*(V-Es));
+            # (-1/tm)*( V-Af*tanh(sigma_s/A_f*V)+q-InjCurr)
+            # dq_E/dt = (1/tau_s)*(-q+sigma_s*(V-Es))
 
             kk1 = myT.h * ( (-1/tau_m_E) * ( (V_E+0   ) - A_f_E*math.tanh( (sigma_f_E/A_f_E)*(V_E+0   ) ) + (q_E+0   ) - InjCurr_E ) )
             ll1 = myT.h * ( ( 1/tau_s_E) * (-(q_E+0   ) + sigma_s_E * ( V_E - Es_E ) ) )
@@ -318,7 +320,6 @@ class mlmpCPG(object):
                     if positivSide=='F':
                         self.joint.gain_joint_motor = -1*math.fabs(self.joint.gain_joint_motor)
                         # please refer to the function "fCalcMotorCommand" to check the subtraction 
-        return; 
     
     #########################    
     def fCalcMotorCommand(self):
@@ -330,89 +331,84 @@ class mlmpCPG(object):
         self.joint.joint_motor_signal = init_motor_pos  + ( gain_joint_motor * (Eo - Fo) )
         
         #self.joint.joint_motor_signal = self.joint.init_motor_pos  + ( self.joint.gain_joint_motor * (self.MN.E.o - self.MN.F.o) )
-        return; 
+
     #########################
-    def fPrint(self):
-        #print '\n'        
-        print '---------------------'
-        print '-1- Description :', self.description 
-        print '\n'        
-        print '-2- joint name :', self.joint.name
-        print '-3- joint maxJointAng :', self.joint.maxJointAng
-        print '-4- joint minJointAng :', self.joint.minJointAng
-        print '-5- joint init_motor_pos :', self.joint.init_motor_pos
-        print '-6- joint gain_joint_motor :', self.joint.gain_joint_motor
-        print '-7- joint motor_signal :', self.joint.joint_motor_signal
-        print '\n'        
-        print '-8- RG E Es:', self.RG.E.Es
-        print '-9- RG E A_f:', self.RG.E.A_f
-        print '-10- RG E InjCurrent_value:', self.RG.E.InjCurrent_value
-        print '-11- RG E InjCurrent_MultiplicationFactor:', self.RG.E.InjCurrent_MultiplicationFactor
-        print '-12- RG E sigma_f:', self.RG.E.sigma_f
-        print '-13- RG E sigma_s:', self.RG.E.sigma_s
-        print '-14- RG E tau_m:', self.RG.E.tau_m
-        print '-15- RG E tau_s:', self.RG.E.tau_s
-        print '-16- RG E V_0:', self.RG.E.V_0
-        print '-17- RG E q_0:', self.RG.E.q_0
-        print '-18- RG E V:', self.RG.E.V
-        print '-19- RG E q:', self.RG.E.q
-        print '-20- RG E out:', self.RG.E.out
-        print '\n'        
-        print '-21- RG F Es:', self.RG.F.Es
-        print '-22- RG F A_f:', self.RG.F.A_f
-        print '-23- RG F InjCurrent_value:', self.RG.F.InjCurrent_value
-        print '-24- RG F InjCurrent_MultiplicationFactor:', self.RG.F.InjCurrent_MultiplicationFactor
-        print '-25- RG F sigma_f:', self.RG.F.sigma_f
-        print '-26- RG F sigma_s:', self.RG.F.sigma_s
-        print '-27- RG F tau_m:', self.RG.F.tau_m
-        print '-28- RG F tau_s:', self.RG.F.tau_s
-        print '-29- RG F V_0:', self.RG.F.V_0
-        print '-30- RG F q_0:', self.RG.F.q_0
-        print '-31- RG F V:', self.RG.F.V
-        print '-32- RG F q:', self.RG.F.q
-        print '-33- RG F out:', self.RG.F.out
-        print '\n'
-        print '-34- PF E alpha:', self.PF.E.alpha
-        print '-35- PF E theta:', self.PF.E.theta
-        print '-36- PF E alpha_MLR:', self.PF.E.alpha_MLR
-        print '-37- PF E theta_MLR:', self.PF.E.theta_MLR
-        print '-38- PF E i:', self.PF.E.i
-        print '-39- PF E o:', self.PF.E.o
-        print '\n'
-        print '-40- PF F alpha:', self.PF.F.alpha
-        print '-41- PF F theta:', self.PF.F.theta
-        print '-42- PF F alpha_MLR:', self.PF.F.alpha_MLR
-        print '-43- PF F theta_MLR:', self.PF.F.theta_MLR
-        print '-44- PF F i:', self.PF.F.i
-        print '-45- PF F o:', self.PF.F.o    
-        print '\n'
-        print '-46- MN E alpha :', self.MN.E.alpha    
-        print '-47- MN E theta:', self.MN.E.theta
-        print '-48- MN E i:', self.MN.E.i
-        print '-49- MN E o:', self.MN.E.o
-        print '\n'
-        print '-50- MN F alpha :', self.MN.F.alpha    
-        print '-51- MN F theta:', self.MN.F.theta
-        print '-52- MN F i:', self.MN.F.i
-        print '-53- MN F o:', self.MN.F.o
-        print '\n'        
-        print '-54- SN F alpha :', self.SN.F.alpha    
-        print '-55- SN F theta:', self.SN.F.theta
-        print '-56- SN F o:', self.SN.F.o
-        print '\n'        
-        print '-57- SN E alpha :', self.SN.E.alpha    
-        print '-58- SN E theta:', self.SN.E.theta
-        print '-59- SN E o:', self.SN.E.o
-        print '\n'
-        print '-60- W_F_RG2PF:', self.W_F_RG2PF  
-        print '-61- W_E_RG2PF:', self.W_E_RG2PF
-        print '-62- W_F_PF2MN:', self.W_F_PF2MN
-        print '-63- W_E_PF2MN:', self.W_E_PF2MN
-        print '-64- W_F_SN2MN:', self.W_F_SN2MN
-        print '-65- W_E_SN2MN:', self.W_E_SN2MN
-
-        return; 
-
+    def fPrint(self):      
+        print('-1- Description :', self.description)
+        print('\n')        
+        print('-2- joint name :', self.joint.name)
+        print('-3- joint maxJointAng :', self.joint.maxJointAng)
+        print('-4- joint minJointAng :', self.joint.minJointAng)
+        print('-5- joint init_motor_pos :', self.joint.init_motor_pos)
+        print('-6- joint gain_joint_motor :', self.joint.gain_joint_motor)
+        print('-7- joint motor_signal :', self.joint.joint_motor_signal)
+        print('\n')
+        print('-8- RG E Es:', self.RG.E.Es)
+        print('-9- RG E A_f:', self.RG.E.A_f)
+        print('-10- RG E InjCurrent_value:', self.RG.E.InjCurrent_value)
+        print('-11- RG E InjCurrent_MultiplicationFactor:', self.RG.E.InjCurrent_MultiplicationFactor)
+        print('-12- RG E sigma_f:', self.RG.E.sigma_f)
+        print('-13- RG E sigma_s:', self.RG.E.sigma_s)
+        print('-14- RG E tau_m:', self.RG.E.tau_m)
+        print('-15- RG E tau_s:', self.RG.E.tau_s)
+        print('-16- RG E V_0:', self.RG.E.V_0)
+        print('-17- RG E q_0:', self.RG.E.q_0)
+        print('-18- RG E V:', self.RG.E.V)
+        print('-19- RG E q:', self.RG.E.q)
+        print('-20- RG E out:', self.RG.E.out)
+        print('\n')
+        print('-21- RG F Es:', self.RG.F.Es)
+        print('-22- RG F A_f:', self.RG.F.A_f)
+        print('-23- RG F InjCurrent_value:', self.RG.F.InjCurrent_value)
+        print('-24- RG F InjCurrent_MultiplicationFactor:', self.RG.F.InjCurrent_MultiplicationFactor)
+        print('-25- RG F sigma_f:', self.RG.F.sigma_f)
+        print('-26- RG F sigma_s:', self.RG.F.sigma_s)
+        print('-27- RG F tau_m:', self.RG.F.tau_m)
+        print('-28- RG F tau_s:', self.RG.F.tau_s)
+        print('-29- RG F V_0:', self.RG.F.V_0)
+        print('-30- RG F q_0:', self.RG.F.q_0)
+        print('-31- RG F V:', self.RG.F.V)
+        print('-32- RG F q:', self.RG.F.q)
+        print('-33- RG F out:', self.RG.F.out)
+        print('\n')
+        print('-34- PF E alpha:', self.PF.E.alpha)
+        print('-35- PF E theta:', self.PF.E.theta)
+        print('-36- PF E alpha_MLR:', self.PF.E.alpha_MLR)
+        print('-37- PF E theta_MLR:', self.PF.E.theta_MLR)
+        print('-38- PF E i:', self.PF.E.i)
+        print('-39- PF E o:', self.PF.E.o)
+        print('\n')
+        print('-40- PF F alpha:', self.PF.F.alpha)
+        print('-41- PF F theta:', self.PF.F.theta)
+        print('-42- PF F alpha_MLR:', self.PF.F.alpha_MLR)
+        print('-43- PF F theta_MLR:', self.PF.F.theta_MLR)
+        print('-44- PF F i:', self.PF.F.i)
+        print('-45- PF F o:', self.PF.F.o)   
+        print('\n')
+        print('-46- MN E alpha :', self.MN.E.alpha)  
+        print('-47- MN E theta:', self.MN.E.theta)
+        print('-48- MN E i:', self.MN.E.i)
+        print('-49- MN E o:', self.MN.E.o)
+        print('\n')
+        print('-50- MN F alpha :', self.MN.F.alpha)   
+        print('-51- MN F theta:', self.MN.F.theta)
+        print('-52- MN F i:', self.MN.F.i)
+        print('-53- MN F o:', self.MN.F.o)
+        print('\n')
+        print('-54- SN F alpha :', self.SN.F.alpha)   
+        print('-55- SN F theta:', self.SN.F.theta)
+        print('-56- SN F o:', self.SN.F.o)
+        print('\n')
+        print('-57- SN E alpha :', self.SN.E.alpha) 
+        print('-58- SN E theta:', self.SN.E.theta)
+        print('-59- SN E o:', self.SN.E.o)
+        print('\n')
+        print('-60- W_F_RG2PF:', self.W_F_RG2PF)
+        print('-61- W_E_RG2PF:', self.W_E_RG2PF)
+        print('-62- W_F_PF2MN:', self.W_F_PF2MN)
+        print('-63- W_E_PF2MN:', self.W_E_PF2MN)
+        print('-64- W_F_SN2MN:', self.W_F_SN2MN)
+        print('-65- W_E_SN2MN:', self.W_E_SN2MN)
 
 
 #########################
@@ -425,7 +421,7 @@ class RG_Patterns(object):
             self.TAU_M = TM
 
         def fPrint(self):
-            print '---------------------'            
+            print('---------------------')           
             print 'Pattern_sigma_f=',self.sigma_f,'\nPattern_sigma_s=',self.sigma_s,\
             '\nPattern_InjCurrentMultiplicationFactor=',self.InjCurrentMultiplicationFactor,\
             '\nPattern_TAU_M=',self.TAU_M

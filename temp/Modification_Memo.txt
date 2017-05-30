@@ -1,0 +1,4 @@
+0, assign different tasks to different CPUs
+1, alpha amount of movement
+2, modify SetTiming.py, no class in function()!!!
+3, L298~311 change to a seperate function to set the init position
