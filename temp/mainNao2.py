@@ -4,7 +4,7 @@ from naoqi import ALProxy
 import math
 import time
 from naoqi import ALModule
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 import numpy as np
 from SetTiming import *
 from MLMPCPG import *
@@ -37,6 +37,9 @@ left_foot_time_list = []
 right_foot_time_list = []
 left_knee_time_list = []
 right_knee_time_list = []
+
+FSR_list_left_foot = []
+FSR_list_right_foot = []
 #################################################################################################################################
 ####################################### My variables ############################################################################
 #################################################################################################################################
@@ -437,11 +440,17 @@ for I in range(0, int(myT.N_Loop/50)):
     if(mean_value_left_foot > 0.3):
         # the left foot is taping the ground
         t = time.time()
+        # record the time_axis
         left_foot_time_list.append(t)
+        #record the FSR_axis
+        FSR_list_left_foot.append(mean_value_left_foot)
     if(mean_value_right_foot > 0.3):
         # the right foot is taping the ground
         t = time.time()
+        # record the time_axis
         right_foot_time_list.append(t)
+        #record the FSR_axis
+        FSR_list_right_foot.append(mean_value_right_foot)
 
     angle_left_knee_pitch = CurPos[11] # 11 means L_Knee_Pitch, refer to CurPos,
     angle_right_knee_pitch = CurPos[17] # Note! Starting from 0
@@ -613,7 +622,14 @@ movObj.setStiffnesses('Body',0.0)
 ###################################### My 2nd contribution starts ##########################################################
 ############################################################################################################################
 #!! problems here!
-#!! first plot the image of (FSR, time)
+# !! first plot the image of (FSR, time)
+def draw_plot(x_axis_list, y_axis_list):
+    if(len(x_axis_list) != len(y_axis_list)):
+        print('Error: x_axis_len and y_axis_len does not match')
+    x = x_axis_list
+    y = y_axis_list
+    plt.scatter(x, y) # just draw the dots
+    plt.show()
 def calc_delta_t(parameter_list):
     delta_t_list = []
     for i in range(len(parameter_list) - 1):
@@ -628,10 +644,12 @@ delta_t_right_foot = calc_delta_t(right_foot_time_list)
 delta_t_left_knee_pitch = calc_delta_t(left_knee_time_list)
 delta_t_right_knee_pitch = calc_delta_t(right_knee_time_list)
 
-print('left_foot: ', delta_t_left_foot)
-print('right_foot: ', delta_t_right_foot)
-print('left_knee', delta_t_left_knee_pitch)
-print('right_knee', delta_t_right_knee_pitch)
+draw_plot(left_foot_time_list, FSR_list_left_foot)
+
+print('left_foot: ', len(delta_t_left_foot))
+print('right_foot: ', len(delta_t_right_foot))
+print('left_knee', len(delta_t_left_knee_pitch))
+print('right_knee', len(delta_t_right_knee_pitch))
 #f_left_foot = 1/delta_t_left_foot
 ############################################################################################################################
 ###################################### My 2nd contribution ends ############################################################
