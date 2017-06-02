@@ -13,7 +13,7 @@ from random import randint
 
 #NAOIP = "nao.local"
 
-NAOIP = "169.254.28.144"
+NAOIP = "169.254.40.17"
 
 PORT = 9559
 
@@ -102,7 +102,8 @@ fractionMaxSpeed = 1.0
 
 # Disable Fall Manager 
 TextObj.say('Attention, Fall Manager is Disabled.') 
-movObj.setFallManagerEnabled(False) # True False
+# panpan
+#movObj.setFallManagerEnabled(False) # True False
 time.sleep(1)
 
 # http://doc.aldebaran.com/2-1/family/robots/postures_robot.html#robot-postures
@@ -628,7 +629,7 @@ def draw_plot(x_axis_list, y_axis_list):
         print('Error: x_axis_len and y_axis_len does not match')
     x = x_axis_list
     y = y_axis_list
-    plt.scatter(x, y) # just draw the dots
+    plt.plot(x, y) # just draw the dots
     plt.show()
 def calc_delta_t(parameter_list):
     delta_t_list = []
