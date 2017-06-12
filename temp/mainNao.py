@@ -73,7 +73,7 @@ movObj = ALProxy("ALMotion",NAOIP,PORT)
 movObj.setStiffnesses('Body',0.99)
 
 # Connect to the module ALTextToSpeechProxy
-TextObj = ALProxy("ALTextToSpeech",NAOIP,PORT)
+TextObj = ALProxy("ALTextToSpeech", NAOIP,PORT)
 
 # Connect to the module ALRobotPostureProxy
 postObj = ALProxy("ALRobotPosture",NAOIP,PORT)

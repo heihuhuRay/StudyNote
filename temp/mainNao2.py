@@ -13,7 +13,7 @@ from random import randint
 
 #NAOIP = "nao.local"
 
-NAOIP = "169.254.40.17"
+NAOIP = 'nao.local'
 
 PORT = 9559
 
@@ -27,8 +27,8 @@ global LFsrFL,LFsrFR,LFsrBL,LFsrBR,RFsrFL,RFsrFR,RFsrBL,RFsrBR,LHandBackSensor,L
 global myCont,CurPos,myT
 
 
-All_Command=[]
-All_Sensor=[]
+All_Command = []
+All_Sensor = []
 
 #################################################################################################################################
 ####################################### My variables ############################################################################
@@ -103,7 +103,7 @@ fractionMaxSpeed = 1.0
 # Disable Fall Manager 
 TextObj.say('Attention, Fall Manager is Disabled.') 
 # panpan
-#movObj.setFallManagerEnabled(False) # True False
+movObj.setFallManagerEnabled(False) # True False
 time.sleep(1)
 
 # http://doc.aldebaran.com/2-1/family/robots/postures_robot.html#robot-postures
@@ -360,7 +360,7 @@ def calc_mean_sensor_value(parameter_list, parameter_num):
 MAT_Iinj = [];
 num_loop_times = 1
 for I in range(0, int(myT.N_Loop/50)):
-    t = I*myT.T;
+    t = I*myT.T
     print("****** I = ", I)
     #?? as I understand the InjCurrent is just a constant factor which value is 0???
     # #################
@@ -417,7 +417,7 @@ for I in range(0, int(myT.N_Loop/50)):
 ############################################################################################################################
 ###################################### My contribution starts ##############################################################
 ############################################################################################################################
-    print('Loop:  ', num_loop_times)
+    print('Loop: ', num_loop_times)
     num_loop_times = num_loop_times + 1
 
     left_FSR_dir_list = [   'Device/SubDeviceList/LFoot/FSR/FrontLeft/Sensor/Value',
@@ -438,7 +438,7 @@ for I in range(0, int(myT.N_Loop/50)):
     
     # Record delta_time between each tap on the ground
     
-    if(mean_value_left_foot > 0.3):
+    if(mean_value_left_foot > 0):
         # the left foot is taping the ground
         t = time.time()
         # record the time_axis
@@ -629,7 +629,7 @@ def draw_plot(x_axis_list, y_axis_list):
         print('Error: x_axis_len and y_axis_len does not match')
     x = x_axis_list
     y = y_axis_list
-    plt.plot(x, y) # just draw the dots
+    plt.plot(x, y, 'o') # just draw the dots
     plt.show()
 def calc_delta_t(parameter_list):
     delta_t_list = []
