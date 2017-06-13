@@ -6,10 +6,12 @@ import time
 from naoqi import ALModule
 import matplotlib.pyplot as plt
 import numpy as np
-from SetTiming import *
-from MLMPCPG import *
-from NAOMotor import *
+import scipy.signal as signal
+from set_timing import *
+from ml_mp_cpg import *
+from nao_motor import *
 from random import randint
+import lowpass_filter as lpf
 
 #NAOIP = "nao.local"
 
@@ -357,9 +359,9 @@ def calc_mean_sensor_value(parameter_list, parameter_num):
 ############################################################################################################################
 ################################# main start from here #####################################################################
 ############################################################################################################################
-MAT_Iinj = [];
+MAT_Iinj = []
 num_loop_times = 1
-for I in range(0, int(myT.N_Loop/50)):
+for I in range(0, int(myT.N_Loop/25)):
     t = I*myT.T
     print("****** I = ", I)
     #?? as I understand the InjCurrent is just a constant factor which value is 0???
@@ -438,13 +440,14 @@ for I in range(0, int(myT.N_Loop/50)):
     
     # Record delta_time between each tap on the ground
     
-    if(mean_value_left_foot > 0):
-        # the left foot is taping the ground
-        t = time.time()
-        # record the time_axis
-        left_foot_time_list.append(t)
-        #record the FSR_axis
-        FSR_list_left_foot.append(mean_value_left_foot)
+# according to the figure, once the FSR_value > 0, and this status stay for more than 4 tiems, then mark as a hit
+    # the left foot is taping the ground
+    t = time.time()
+    # record the time_axis
+    left_foot_time_list.append(t)
+    #record the FSR_axis
+    FSR_list_left_foot.append(mean_value_left_foot)
+
     if(mean_value_right_foot > 0.3):
         # the right foot is taping the ground
         t = time.time()
@@ -624,12 +627,27 @@ movObj.setStiffnesses('Body',0.0)
 ############################################################################################################################
 #!! problems here!
 # !! first plot the image of (FSR, time)
+def calc_freuency_foot(FSR_list):
+    t_num = 0   # threshold for the flags, if t_num > threshlod, then consider the movement as one hit
+    f_num = 0   # frequency counter
+    for sensor_value in FSR_list:
+        print('sensor_value:', sensor_value)
+        if(sensor_value < 0.3):
+            t_num = t_num + 1
+        else:
+            t_num = 0
+        if(t_num == 4):
+            f_num = f_num + 1
+    print('left_foot_frequency:', f_num)
+    return f_num # output: frequency
+
 def draw_plot(x_axis_list, y_axis_list):
     if(len(x_axis_list) != len(y_axis_list)):
         print('Error: x_axis_len and y_axis_len does not match')
     x = x_axis_list
     y = y_axis_list
     plt.plot(x, y, 'o') # just draw the dots
+    plt.plot(x, y)
     plt.show()
 def calc_delta_t(parameter_list):
     delta_t_list = []
@@ -645,12 +663,22 @@ delta_t_right_foot = calc_delta_t(right_foot_time_list)
 delta_t_left_knee_pitch = calc_delta_t(left_knee_time_list)
 delta_t_right_knee_pitch = calc_delta_t(right_knee_time_list)
 
-draw_plot(left_foot_time_list, FSR_list_left_foot)
 
+draw_plot(left_foot_time_list, FSR_list_left_foot)
+# draw the 2nd figure which is the filtered figure
+b_f = lpf.Butter_Filter()
+b_f._data_ = FSR_list_left_foot
+data_after_filt = b_f.butter_lowpass_filter()
+draw_plot(left_foot_time_list, data_after_filt)
+
+print('left_foot_frequency: ', calc_freuency_foot(data_after_filt))
+'''
+# the calculate the mean time and mean frequency
 print('left_foot: ', len(delta_t_left_foot))
 print('right_foot: ', len(delta_t_right_foot))
 print('left_knee', len(delta_t_left_knee_pitch))
 print('right_knee', len(delta_t_right_knee_pitch))
+'''
 #f_left_foot = 1/delta_t_left_foot
 ############################################################################################################################
 ###################################### My 2nd contribution ends ############################################################
@@ -667,5 +695,10 @@ f.close()
 
 f = open('AllAngels', 'w')
 s = str(All_Sensor)
+f.write(s)
+f.close()
+# store the data from the left foot FSR
+f = open('RareData', 'w')
+s = str(FSR_list_left_foot)
 f.write(s)
 f.close()

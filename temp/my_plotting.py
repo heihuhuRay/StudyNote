@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-
+import Lowpass_filter
 def fPlotJointCommandSensor(All_Command,All_Sensor,JointIndex,Str):
     
     data2print1=[]
@@ -10,13 +10,13 @@ def fPlotJointCommandSensor(All_Command,All_Sensor,JointIndex,Str):
     for i in range(0,len(All_Sensor)):
         data2print2.append(All_Sensor[i][JointIndex])
     
-    plt.plot( range(len(data2print1)), data2print1,'b', range(len(data2print2)),data2print2,'r')
+    plt.plot( range(len(data2print1)), data2print1, 'b', range(len(data2print2)), data2print2,'r')
     plt.xlabel('Time')
     plt.ylabel('Motor Command / Sensor Value')
     plt.title(Str)
     plt.grid(True)
     plt.show()
-        
+
 """
     # row and column sharing
     f, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2)

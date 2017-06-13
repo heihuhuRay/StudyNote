@@ -1,4 +1,4 @@
-# -*- encoding: UTF-8 -*- 
+# -*- encoding: UTF-8 -*-
 from random import randint
 #from enum import Enum
 import math
@@ -9,12 +9,12 @@ import math
 
 ##########################
 class Joint(object):
-    name =                      'JointName'
-    maxJointAng =           0.0 # [Rad]
-    minJointAng =            0.0 # [Rad] 
-    init_motor_pos =        0.0 # [Rad] 
-    gain_joint_motor =     5.0
-    joint_motor_signal =   init_motor_pos # [Rad]
+    name = 'JointName'
+    maxJointAng = 0.0 # [Rad]
+    minJointAng = 0.0 # [Rad] 
+    init_motor_pos = 0.0 # [Rad] 
+    gain_joint_motor = 5.0
+    joint_motor_signal = init_motor_pos # [Rad]
 
 class RSNeuron(object): # Roat Selverston Neuron 
     Es  = 0.0
@@ -422,10 +422,10 @@ class RG_Patterns(object):
 
         def fPrint(self):
             print('---------------------')           
-            print 'Pattern_sigma_f=',self.sigma_f,'\nPattern_sigma_s=',self.sigma_s,\
+            print('Pattern_sigma_f=',self.sigma_f,'\nPattern_sigma_s=',self.sigma_s,\
             '\nPattern_InjCurrentMultiplicationFactor=',self.InjCurrentMultiplicationFactor,\
-            '\nPattern_TAU_M=',self.TAU_M
-            return; 
+            '\nPattern_TAU_M=',self.TAU_M)
+            return
             
 
 #########################
@@ -436,12 +436,11 @@ class PF_Patterns(object):
             self.theta = Ta
 
         def fPrint(self):
-            print '---------------------'
-            print 'Pattern_alpha=',self.alpha,'\nPattern_theta=',self.theta
-            return; 
+            print('---------------------')
+            print('Pattern_alpha=',self.alpha,'\nPattern_theta=',self.theta)
+            return
             
-#########################
-        
+#########################        
 def fnewMLMPcpg(nbr_cpg):
     #cpgJ = [ mlmpCPG() for i in range(nbr_cpg)]
     cpgJ = []
