@@ -35,7 +35,7 @@ fs = 30.0
 T = 5.0         # seconds
 n = int(T * fs) # total number of samples
 t = np.linspace(0, T, len(rare_data), endpoint=False)
-
+'''
 plt.plot(t, rare_data, 'ob-', label='data')
 plt.plot(t, filtered_data, 'og-', linewidth=2, label='filtered data')
 plt.plot(t, filtered_data_2, 'r-', linewidth=2, label='filtered data 2')
@@ -43,5 +43,5 @@ plt.plot(t, filtered_data_2, 'r-', linewidth=2, label='filtered data 2')
 plt.xlabel('Time [sec]')
 plt.grid()
 plt.legend()
-plt.show()
-
+#plt.show()
+'''

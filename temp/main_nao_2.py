@@ -151,7 +151,7 @@ print("listVal:" ,listValRead)
 
 ###################################### 
 
-# "MiddleTactileON" CLOSE THE HAND TO PICK THE BALL 
+# "MiddleTactileON" start preparation
 while True:
     MiddleTactileON = memProxy.getData('Device/SubDeviceList/Head/Touch/Middle/Sensor/Value')
     if (MiddleTactileON):
@@ -170,17 +170,15 @@ myCont = fnewMLMPcpg(number_cpg)
 myCont = fSetCPGNet(myCont,'MyNao.txt','MyNaoPsitiveAngle_E_or_F.txt')
 #myCont2[25].RG.E.Es = 99
 #fPrintMLMPcpg(myCont)
-
+# set oscillator for RG_Pattern
 PatternOsc0 = RG_Patterns(10,10,1,0.1)
 PatternOsc1 = RG_Patterns(17.5,17.5,1,0.05)
 PatternOsc2 = RG_Patterns(10,10,1,0.1) 
-
 PatternOsc3 = RG_Patterns(2,10,1,0.1) # This is a smooth patern 
-PatternOsc = PatternOsc1
-
-
 PatternOsc4 = RG_Patterns(1.5,10,1,0.1) 
+PatternOsc_faster_walking = RG_Patterns(17.5, 23.5, 1, 0.05)
 
+PatternOsc = PatternOsc_faster_walking
 
 # Several patterns in the following can be found in the reference paper
 # PatternOsc1.fPrintPattern()
@@ -350,6 +348,20 @@ for i in range(0, len(myCont)):
 #############################
 time1 = time.time()
 
+def calc_freuency_foot(FSR_list):
+    t_num = 0   # threshold for the flags, if t_num > threshlod, then consider the movement as one hit
+    f_num = 0   # frequency counter
+    for sensor_value in FSR_list:
+        #print('sensor_value:', sensor_value)
+        if(sensor_value < 0.3):
+            t_num = t_num + 1
+        else:
+            t_num = 0
+        if(t_num == 4):
+            f_num = f_num + 1
+    print('left_foot_step:', f_num)
+    return f_num # output: frequency
+
 def calc_mean_sensor_value(parameter_list, parameter_num):
     sum_sensor_value = 0
     for sensor_dir in parameter_list:
@@ -361,6 +373,7 @@ def calc_mean_sensor_value(parameter_list, parameter_num):
 ############################################################################################################################
 MAT_Iinj = []
 num_loop_times = 1
+start_time = time.time()
 for I in range(0, int(myT.N_Loop/25)):
     t = I*myT.T
     print("****** I = ", I)
@@ -414,6 +427,7 @@ for I in range(0, int(myT.N_Loop/25)):
         MotorCommand[i] = myCont[i].joint.joint_motor_signal
     
     movObj.setAngles('Body', MotorCommand , fractionMaxSpeed)
+
     #movObj.angleInterpolation('Body',MotorCommand , 0.03, True)
 
 ############################################################################################################################
@@ -447,6 +461,12 @@ for I in range(0, int(myT.N_Loop/25)):
     left_foot_time_list.append(t)
     #record the FSR_axis
     FSR_list_left_foot.append(mean_value_left_foot)
+    b_f = lpf.Butter_Filter()
+    b_f._data_ = FSR_list_left_foot
+    data_after_filt = b_f.butter_lowpass_filter()
+    running_duration = time.time()- start_time
+    print('walking time: ', running_duration)
+    print('left_foot_frequency: ', calc_freuency_foot(data_after_filt)/running_duration)
 
     if(mean_value_right_foot > 0.3):
         # the right foot is taping the ground
@@ -627,19 +647,6 @@ movObj.setStiffnesses('Body',0.0)
 ############################################################################################################################
 #!! problems here!
 # !! first plot the image of (FSR, time)
-def calc_freuency_foot(FSR_list):
-    t_num = 0   # threshold for the flags, if t_num > threshlod, then consider the movement as one hit
-    f_num = 0   # frequency counter
-    for sensor_value in FSR_list:
-        print('sensor_value:', sensor_value)
-        if(sensor_value < 0.3):
-            t_num = t_num + 1
-        else:
-            t_num = 0
-        if(t_num == 4):
-            f_num = f_num + 1
-    print('left_foot_frequency:', f_num)
-    return f_num # output: frequency
 
 def draw_plot(x_axis_list, y_axis_list):
     if(len(x_axis_list) != len(y_axis_list)):
@@ -654,7 +661,7 @@ def calc_delta_t(parameter_list):
     for i in range(len(parameter_list) - 1):
         interval_t = parameter_list[i+1] - parameter_list[i]
         delta_t_list.append(interval_t)
-    print(delta_t_list)
+    #print(delta_t_list)
     delta_t = np.mean(delta_t_list)
     return delta_t
 
@@ -670,8 +677,9 @@ b_f = lpf.Butter_Filter()
 b_f._data_ = FSR_list_left_foot
 data_after_filt = b_f.butter_lowpass_filter()
 draw_plot(left_foot_time_list, data_after_filt)
-
-print('left_foot_frequency: ', calc_freuency_foot(data_after_filt))
+running_duration = time.time()- start_time
+print('walking time: ', running_duration)
+print('left_foot_frequency: ', calc_freuency_foot(data_after_filt)/running_duration)
 '''
 # the calculate the mean time and mean frequency
 print('left_foot: ', len(delta_t_left_foot))
