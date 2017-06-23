@@ -39,9 +39,11 @@ left_foot_time_list = []
 right_foot_time_list = []
 left_knee_time_list = []
 right_knee_time_list = []
+left_foot_hit_timestamp_list = []
 
 FSR_list_left_foot = []
 FSR_list_right_foot = []
+temp_FSR_time_list = []
 #################################################################################################################################
 ####################################### My variables ############################################################################
 #################################################################################################################################
@@ -103,13 +105,13 @@ time.sleep(1)
 fractionMaxSpeed = 1.0
 
 # Disable Fall Manager 
-TextObj.say('Attention, Fall Manager is Disabled.') 
+TextObj.say('Attention') 
 # panpan
 movObj.setFallManagerEnabled(False) # True False
 time.sleep(1)
 
 # http://doc.aldebaran.com/2-1/family/robots/postures_robot.html#robot-postures
-TextObj.say('Initial posture: standing')
+#TextObj.say('Initial posture: standing')
 postObj.goToPosture("StandInit",0.8)
 time.sleep(2)
 
@@ -176,7 +178,7 @@ PatternOsc1 = RG_Patterns(17.5,17.5,1,0.05)
 PatternOsc2 = RG_Patterns(10,10,1,0.1) 
 PatternOsc3 = RG_Patterns(2,10,1,0.1) # This is a smooth patern 
 PatternOsc4 = RG_Patterns(1.5,10,1,0.1) 
-PatternOsc_faster_walking = RG_Patterns(17.5, 23.5, 1, 0.05)
+PatternOsc_faster_walking = RG_Patterns(17.5, 23.5, 1, 0.05) #sigma_s range [13, 23]
 
 PatternOsc = PatternOsc_faster_walking
 
@@ -348,19 +350,30 @@ for i in range(0, len(myCont)):
 #############################
 time1 = time.time()
 
-def calc_freuency_foot(FSR_list):
-    t_num = 0   # threshold for the flags, if t_num > threshlod, then consider the movement as one hit
-    f_num = 0   # frequency counter
-    for sensor_value in FSR_list:
-        #print('sensor_value:', sensor_value)
-        if(sensor_value < 0.3):
-            t_num = t_num + 1
-        else:
-            t_num = 0
-        if(t_num == 4):
-            f_num = f_num + 1
-    print('left_foot_step:', f_num)
-    return f_num # output: frequency
+def calc_frequency(timestamp_list):
+    if(len(timestamp_list) < 3):
+        timestamp_list = [0,1]
+    print('timestamp_list', timestamp_list)
+    print('timestamp_list[-1]', timestamp_list[-1])
+    print('timestamp_list[-2]', timestamp_list[-2])
+    delta_t = timestamp_list[-1] - timestamp_list[-2]
+    f = 1/delta_t
+    return f
+     
+def mark_hit_timestamp(temp_list):
+    cur_time = 0
+    cur_sensor_val = 0
+    pre_sensor_val = 0
+    
+    for i in range(1, len(temp_list) - 1):
+        print('temp_list[i][0]', temp_list[i][0])
+        pre_sensor_val = temp_list[i-1][0]
+        cur_sensor_val = temp_list[i][0]
+        next_sensor_val = temp_list[i+1][0]
+        cur_time = temp_list[i][1]
+        if(next_sensor_val < cur_sensor_val) and (cur_sensor_val > pre_sensor_val):
+            print('current time',cur_time)
+            return cur_time
 
 def calc_mean_sensor_value(parameter_list, parameter_num):
     sum_sensor_value = 0
@@ -451,30 +464,27 @@ for I in range(0, int(myT.N_Loop/25)):
     
     mean_value_left_foot  = calc_mean_sensor_value(total_left_FSR_dir_list, 1)
     mean_value_right_foot = calc_mean_sensor_value(total_right_FSR_dir_list, 1)
+   
     
-    # Record delta_time between each tap on the ground
-    
-# according to the figure, once the FSR_value > 0, and this status stay for more than 4 tiems, then mark as a hit
-    # the left foot is taping the ground
-    t = time.time()
     # record the time_axis
-    left_foot_time_list.append(t)
-    #record the FSR_axis
-    FSR_list_left_foot.append(mean_value_left_foot)
-    b_f = lpf.Butter_Filter()
-    b_f._data_ = FSR_list_left_foot
-    data_after_filt = b_f.butter_lowpass_filter()
-    running_duration = time.time()- start_time
-    print('walking time: ', running_duration)
-    print('left_foot_frequency: ', calc_freuency_foot(data_after_filt)/running_duration)
+    left_foot_time_list.append(time.time())
 
-    if(mean_value_right_foot > 0.3):
-        # the right foot is taping the ground
-        t = time.time()
-        # record the time_axis
-        right_foot_time_list.append(t)
-        #record the FSR_axis
-        FSR_list_right_foot.append(mean_value_right_foot)
+    # record the FSR_axis
+    FSR_list_left_foot.append(mean_value_left_foot)
+
+    # filter it and store it in data_after_filt
+    b_f = lpf.Butter_Filter()
+    data_after_filt = b_f.butter_lowpass_filter(FSR_list_left_foot)
+    
+    # combine 2 lists(left_foot_time_list, FSR_list_left_foot)
+    # 因为是一一对应的关系 所以可以存到一个列表里temp_FSR_time_list
+    for i in range(len(left_foot_time_list)):
+        temp_FSR_time_list.append([data_after_filt[i], left_foot_time_list[i]])
+    
+    if(mark_hit_timestamp(temp_FSR_time_list) != None):
+        left_foot_hit_timestamp_list.append(mark_hit_timestamp(temp_FSR_time_list))
+    print('left_foot_hit_timestamp_list', left_foot_hit_timestamp_list)
+    print(calc_frequency(left_foot_hit_timestamp_list))
 
     angle_left_knee_pitch = CurPos[11] # 11 means L_Knee_Pitch, refer to CurPos,
     angle_right_knee_pitch = CurPos[17] # Note! Starting from 0
@@ -677,9 +687,9 @@ b_f = lpf.Butter_Filter()
 b_f._data_ = FSR_list_left_foot
 data_after_filt = b_f.butter_lowpass_filter()
 draw_plot(left_foot_time_list, data_after_filt)
-running_duration = time.time()- start_time
-print('walking time: ', running_duration)
-print('left_foot_frequency: ', calc_freuency_foot(data_after_filt)/running_duration)
+runtime_duration = time.time()- start_time
+print('walking time: ', runtime_duration)
+print('left_foot_frequency: ', calc_freuency_foot(data_after_filt)/runtime_duration)
 '''
 # the calculate the mean time and mean frequency
 print('left_foot: ', len(delta_t_left_foot))
