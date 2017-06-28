@@ -449,16 +449,6 @@ for I in range(0, int(myT.N_Loop/25)):
     print('Loop: ', num_loop_times)
     num_loop_times = num_loop_times + 1
 
-    left_FSR_dir_list = [   'Device/SubDeviceList/LFoot/FSR/FrontLeft/Sensor/Value',
-                            'Device/SubDeviceList/LFoot/FSR/FrontRight/Sensor/Value',
-                            'Device/SubDeviceList/LFoot/FSR/RearLeft/Sensor/Value'
-                            'Device/SubDeviceList/LFoot/FSR/RearRight/Sensor/Value'
-                        ]
-    right_FSR_dir_list = [  'Device/SubDeviceList/RFoot/FSR/FrontLeft/Sensor/Value',
-                            'Device/SubDeviceList/RFoot/FSR/FrontRight/Sensor/Value',
-                            'Device/SubDeviceList/RFoot/FSR/RearLeft/Sensor/Value'
-                            'Device/SubDeviceList/RFoot/FSR/RearRight/Sensor/Value'
-                        ]
     total_left_FSR_dir_list  = ['Device/SubDeviceList/LFoot/FSR/TotalWeight/Sensor/Value']
     total_right_FSR_dir_list = ['Device/SubDeviceList/RFoot/FSR/TotalWeight/Sensor/Value']
     
