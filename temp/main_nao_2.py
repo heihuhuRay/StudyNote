@@ -364,19 +364,21 @@ def calc_frequency(timestamp_list):
     return f
      
 def mark_hit_timestamp(temp_list):
-    cur_time = 0
-    cur_sensor_val = 0
-    pre_sensor_val = 0
+    diff_time_list = []
     
-    for i in range(1, len(temp_list) - 1):
+    for i in range(1, len(temp_list)):
         print('temp_list[i][0]', temp_list[i][0])
         pre_sensor_val = temp_list[i-1][0]
         cur_sensor_val = temp_list[i][0]
-        next_sensor_val = temp_list[i+1][0]
+        diff = cur_sensor_val - pre_sensor_val
+        
         cur_time = temp_list[i][1]
-        if(next_sensor_val < cur_sensor_val) and (cur_sensor_val > pre_sensor_val):
-            print('current time',cur_time)
-            return cur_time
+        diff_time_list.append([diff, cur_time])
+
+    for i in range(2, len(diff_time_list)):
+        if((diff_time_list[i-1][0] > 0) and (diff_time_list[i][0] < 0)):
+            # it is a peak
+            left_foot_hit_timestamp_list.append(diff_time_list[i-1][1]) 
 
 def calc_mean_sensor_value(parameter_list, parameter_num):
     sum_sensor_value = 0
@@ -458,9 +460,9 @@ for I in range(0, int(myT.N_Loop/25)):
 
     #movObj.angleInterpolation('Body',MotorCommand , 0.03, True)
 
-############################################################################################################################
-###################################### My contribution starts ##############################################################
-############################################################################################################################
+    ############################################################################################################################
+    ###################################### My contribution starts ##############################################################
+    ############################################################################################################################
     print('Loop: ', num_loop_times)
     num_loop_times = num_loop_times + 1
     #get mean FSR value of left foot
@@ -471,37 +473,26 @@ for I in range(0, int(myT.N_Loop/25)):
     update_FRS_time_list(mean_value_left_foot)
 
     # filter it and store it in data_after_filt
-    filter_data(FSR_list_left_foot)
+    data_after_filt = filter_data(FSR_list_left_foot)
    
     # combine 2 lists(left_foot_time_list, FSR_list_left_foot)
     # 因为是一一对应的关系 所以可以存到一个列表里temp_FSR_time_list
+    '''    
     for i in range(len(left_foot_time_list)):
         temp_FSR_time_list.append([data_after_filt[i], left_foot_time_list[i]])
-    
-    if(mark_hit_timestamp(temp_FSR_time_list) != None):
-        left_foot_hit_timestamp_list.append(mark_hit_timestamp(temp_FSR_time_list))
-    print('left_foot_hit_timestamp_list', left_foot_hit_timestamp_list)
-    print(calc_frequency(left_foot_hit_timestamp_list))
+    print('temp_FSR_time_list', temp_FSR_time_list )
+    #mark_hit_timestamp(temp_FSR_time_list)
+    '''
+    #print('left_foot_hit_timestamp_list', left_foot_hit_timestamp_list)
+    #print(calc_frequency(left_foot_hit_timestamp_list))
 
     angle_left_knee_pitch = CurPos[11] # 11 means L_Knee_Pitch, refer to CurPos,
     angle_right_knee_pitch = CurPos[17] # Note! Starting from 0
-    # Record delta_time of Hip joints
-    
-    if(angle_left_knee_pitch > 0.7):
-        t = time.time()
-        left_knee_time_list.append(t)
-    if(angle_right_knee_pitch > 0.7):
-        t = time.time()
-        right_knee_time_list.append(t)
+   
 
-    #!! frequency of joints, f1
-    #print('Right Knee Pitch Sensor position value:', memProxy.getData('Device/SubDeviceList/RKneePitch/Position/Sensor/Value'))
-    #!! frequency of foot, f2
-    #print('Right Foot left front Sensor value:', memProxy.getData('Device/SubDeviceList/RFoot/FSR/FrontLeft/Sensor/Value'))
-
-############################################################################################################################
-###################################### My contribution ends ################################################################
-############################################################################################################################    
+    ############################################################################################################################
+    ###################################### My contribution ends ################################################################
+    ############################################################################################################################    
     
     # Read motor angel from robot joints 
     CurPos = movObj.getAngles('Body',True)
