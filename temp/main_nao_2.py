@@ -41,6 +41,9 @@ left_knee_time_list = []
 right_knee_time_list = []
 left_foot_hit_timestamp_list = []
 
+total_left_FSR_dir_list = ['Device/SubDeviceList/LFoot/FSR/TotalWeight/Sensor/Value']
+total_right_FSR_dir_list = ['Device/SubDeviceList/RFoot/FSR/TotalWeight/Sensor/Value']
+
 FSR_list_left_foot = []
 FSR_list_right_foot = []
 temp_FSR_time_list = []
@@ -152,26 +155,15 @@ print("listVal:" ,listValRead)
 #print "listVal[1]:" ,listValRead[1] 
 
 ###################################### 
-
-# "MiddleTactileON" start preparation
-while True:
-    MiddleTactileON = memProxy.getData('Device/SubDeviceList/Head/Touch/Middle/Sensor/Value')
-    if (MiddleTactileON):
-        movObj.setAngles('LHand', 0, 0.5)
-        time.sleep(1)
-        break
+#start preparation
 ######################################
-
-
 myT = fSetTiming()
-#fPrintTiming(myT)
 
 myCont = fnewMLMPcpg(number_cpg)
-#fPrintMLMPcpg(myCont[0:number_cpg])
 
 myCont = fSetCPGNet(myCont,'MyNao.txt','MyNaoPsitiveAngle_E_or_F.txt')
 #myCont2[25].RG.E.Es = 99
-#fPrintMLMPcpg(myCont)
+
 # set oscillator for RG_Pattern
 PatternOsc0 = RG_Patterns(10,10,1,0.1)
 PatternOsc1 = RG_Patterns(17.5,17.5,1,0.05)
@@ -350,6 +342,17 @@ for i in range(0, len(myCont)):
 #############################
 time1 = time.time()
 
+def filter_data(data_to_filter):
+    b_f = lpf.Butter_Filter()
+    data_after_filter = b_f.butter_lowpass_filter(data_to_filter)
+    return data_after_filter
+    
+def update_FRS_time_list(FSR_value):
+    # record the time_axis
+    left_foot_time_list.append(time.time())
+    # record the FSR_axis
+    FSR_list_left_foot.append(FSR_value)
+
 def calc_frequency(timestamp_list):
     if(len(timestamp_list) < 3):
         timestamp_list = [0,1]
@@ -381,6 +384,18 @@ def calc_mean_sensor_value(parameter_list, parameter_num):
         sum_sensor_value = sum_sensor_value + memProxy.getData(sensor_dir)
     mean_value = sum_sensor_value/parameter_num
     return mean_value
+
+while True:
+    mean_value_left_foot  = calc_mean_sensor_value(total_left_FSR_dir_list, 1)
+    
+    # update the FSR&time list for left foot
+    update_FRS_time_list(mean_value_left_foot)
+
+    MiddleTactileON = memProxy.getData('Device/SubDeviceList/Head/Touch/Middle/Sensor/Value')
+    if (MiddleTactileON):
+        movObj.setAngles('LHand', 0, 0.5)
+        time.sleep(1)
+        break
 ############################################################################################################################
 ################################# main start from here #####################################################################
 ############################################################################################################################
@@ -448,24 +463,16 @@ for I in range(0, int(myT.N_Loop/25)):
 ############################################################################################################################
     print('Loop: ', num_loop_times)
     num_loop_times = num_loop_times + 1
-
-    total_left_FSR_dir_list  = ['Device/SubDeviceList/LFoot/FSR/TotalWeight/Sensor/Value']
-    total_right_FSR_dir_list = ['Device/SubDeviceList/RFoot/FSR/TotalWeight/Sensor/Value']
-    
+    #get mean FSR value of left foot
     mean_value_left_foot  = calc_mean_sensor_value(total_left_FSR_dir_list, 1)
     mean_value_right_foot = calc_mean_sensor_value(total_right_FSR_dir_list, 1)
-   
     
-    # record the time_axis
-    left_foot_time_list.append(time.time())
-
-    # record the FSR_axis
-    FSR_list_left_foot.append(mean_value_left_foot)
+    # update the FSR&time list for left foot
+    update_FRS_time_list(mean_value_left_foot)
 
     # filter it and store it in data_after_filt
-    b_f = lpf.Butter_Filter()
-    data_after_filt = b_f.butter_lowpass_filter(FSR_list_left_foot)
-    
+    filter_data(FSR_list_left_foot)
+   
     # combine 2 lists(left_foot_time_list, FSR_list_left_foot)
     # 因为是一一对应的关系 所以可以存到一个列表里temp_FSR_time_list
     for i in range(len(left_foot_time_list)):
