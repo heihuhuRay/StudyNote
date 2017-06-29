@@ -170,7 +170,7 @@ PatternOsc1 = RG_Patterns(17.5,17.5,1,0.05)
 PatternOsc2 = RG_Patterns(10,10,1,0.1) 
 PatternOsc3 = RG_Patterns(2,10,1,0.1) # This is a smooth patern 
 PatternOsc4 = RG_Patterns(1.5,10,1,0.1) 
-PatternOsc_faster_walking = RG_Patterns(17.5, 23.5, 1, 0.05) #sigma_s range [13, 23]
+PatternOsc_faster_walking = RG_Patterns(5, 23.5, 1, 0.05) #sigma_s range [13, 23]
 
 PatternOsc = PatternOsc_faster_walking
 
@@ -348,37 +348,52 @@ def filter_data(data_to_filter):
     return data_after_filter
     
 def update_FRS_time_list(FSR_value):
-    # record the time_axis
-    left_foot_time_list.append(time.time())
-    # record the FSR_axis
-    FSR_list_left_foot.append(FSR_value)
+    if(len(left_foot_time_list) == len(FSR_list_left_foot) and len(FSR_list_left_foot) <= 100):
+        del left_foot_time_list[0]
+        del FSR_list_left_foot[0]
+        # record the time_axis
+        left_foot_time_list.append(time.time())
+        # record the FSR_axis
+        FSR_list_left_foot.append(FSR_value)
+    else:
+        print('Error: len of list: left_foot_time_list and FSR_list_left_foot not the same')
 
-def calc_frequency(timestamp_list):
-    if(len(timestamp_list) < 3):
-        timestamp_list = [0,1]
-    print('timestamp_list', timestamp_list)
-    print('timestamp_list[-1]', timestamp_list[-1])
-    print('timestamp_list[-2]', timestamp_list[-2])
-    delta_t = timestamp_list[-1] - timestamp_list[-2]
-    f = 1/delta_t
-    return f
-     
-def mark_hit_timestamp(temp_list):
-    diff_time_list = []
-    
-    for i in range(1, len(temp_list)):
-        print('temp_list[i][0]', temp_list[i][0])
-        pre_sensor_val = temp_list[i-1][0]
-        cur_sensor_val = temp_list[i][0]
+def mark_hit_timestamp(fsr_temp_list):
+    # input: fsr_temp_list 
+    #    fsr_temp_list must be filtered data
+    # output: index_list  
+    diff_list = []
+    index_list = []
+    for i in range(1, len(fsr_temp_list)):
+        pre_sensor_val = fsr_temp_list[i-1]
+        cur_sensor_val = fsr_temp_list[i]
         diff = cur_sensor_val - pre_sensor_val
+        diff_list.append(diff)
         
-        cur_time = temp_list[i][1]
-        diff_time_list.append([diff, cur_time])
-
-    for i in range(2, len(diff_time_list)):
-        if((diff_time_list[i-1][0] > 0) and (diff_time_list[i][0] < 0)):
+    for i in range(1, len(diff_list)):
+        if((diff_list[i-1] > 0) and (diff_list[i] < 0) and fsr_temp_list[i] > 0.8):
             # it is a peak
-            left_foot_hit_timestamp_list.append(diff_time_list[i-1][1]) 
+            index_list.append(i) 
+    return index_list
+
+def calc_frequency(index_temp_list, temp_time_list):
+    # input: idnex_temp_list
+    # output: frequency
+    time_stamp = []
+    diff_list = []
+    for i in index_temp_list:
+        time_stamp.append(temp_time_list[i])
+    
+    
+    for i in range(1, len(time_stamp)):
+        pre_sensor_val = time_stamp[i-1]
+        cur_sensor_val = time_stamp[i]
+        diff = cur_sensor_val - pre_sensor_val
+        diff_list.append(diff)
+    
+    mean_diff = np.mean(diff_list)
+    f = 1/mean_diff
+    print("real time frequency :", f)
 
 def calc_mean_sensor_value(parameter_list, parameter_num):
     sum_sensor_value = 0
@@ -389,10 +404,15 @@ def calc_mean_sensor_value(parameter_list, parameter_num):
 
 while True:
     mean_value_left_foot  = calc_mean_sensor_value(total_left_FSR_dir_list, 1)
-    
     # update the FSR&time list for left foot
-    update_FRS_time_list(mean_value_left_foot)
+    left_foot_time_list.append(time.time())
+    # record the FSR_axis
+    FSR_list_left_foot.append(mean_value_left_foot)
 
+    if (len(FSR_list_left_foot) == 100):
+        TextObj.say('already 100 data, please touch my haed to continue')
+        break
+while True:
     MiddleTactileON = memProxy.getData('Device/SubDeviceList/Head/Touch/Middle/Sensor/Value')
     if (MiddleTactileON):
         movObj.setAngles('LHand', 0, 0.5)
@@ -404,9 +424,9 @@ while True:
 MAT_Iinj = []
 num_loop_times = 1
 start_time = time.time()
-for I in range(0, int(myT.N_Loop/25)):
+for I in range(0, int(myT.N_Loop/15)):
     t = I*myT.T
-    print("****** I = ", I)
+    #print("****** I = ", I)
     #?? as I understand the InjCurrent is just a constant factor which value is 0???
     # #################
     # ExtInjCurr
@@ -463,7 +483,7 @@ for I in range(0, int(myT.N_Loop/25)):
     ############################################################################################################################
     ###################################### My contribution starts ##############################################################
     ############################################################################################################################
-    print('Loop: ', num_loop_times)
+    #print('Loop: ', num_loop_times)
     num_loop_times = num_loop_times + 1
     #get mean FSR value of left foot
     mean_value_left_foot  = calc_mean_sensor_value(total_left_FSR_dir_list, 1)
@@ -474,22 +494,12 @@ for I in range(0, int(myT.N_Loop/25)):
 
     # filter it and store it in data_after_filt
     data_after_filt = filter_data(FSR_list_left_foot)
-   
-    # combine 2 lists(left_foot_time_list, FSR_list_left_foot)
-    # 因为是一一对应的关系 所以可以存到一个列表里temp_FSR_time_list
-    '''    
-    for i in range(len(left_foot_time_list)):
-        temp_FSR_time_list.append([data_after_filt[i], left_foot_time_list[i]])
-    print('temp_FSR_time_list', temp_FSR_time_list )
-    #mark_hit_timestamp(temp_FSR_time_list)
-    '''
-    #print('left_foot_hit_timestamp_list', left_foot_hit_timestamp_list)
-    #print(calc_frequency(left_foot_hit_timestamp_list))
-
+    index_list = mark_hit_timestamp(data_after_filt)
+    # print real time frequency
+    calc_frequency(index_list, left_foot_time_list)
+    
     angle_left_knee_pitch = CurPos[11] # 11 means L_Knee_Pitch, refer to CurPos,
     angle_right_knee_pitch = CurPos[17] # Note! Starting from 0
-   
-
     ############################################################################################################################
     ###################################### My contribution ends ################################################################
     ############################################################################################################################    
@@ -668,7 +678,11 @@ delta_t_right_foot = calc_delta_t(right_foot_time_list)
 delta_t_left_knee_pitch = calc_delta_t(left_knee_time_list)
 delta_t_right_knee_pitch = calc_delta_t(right_knee_time_list)
 
-
+print('index_list', index_list)
+calc_frequency(index_list, left_foot_time_list)
+draw_plot(left_foot_time_list, FSR_list_left_foot)
+draw_plot(left_foot_time_list, filter_data(FSR_list_left_foot))
+'''
 draw_plot(left_foot_time_list, FSR_list_left_foot)
 # draw the 2nd figure which is the filtered figure
 b_f = lpf.Butter_Filter()
@@ -678,6 +692,8 @@ draw_plot(left_foot_time_list, data_after_filt)
 runtime_duration = time.time()- start_time
 print('walking time: ', runtime_duration)
 print('left_foot_frequency: ', calc_freuency_foot(data_after_filt)/runtime_duration)
+'''
+
 '''
 # the calculate the mean time and mean frequency
 print('left_foot: ', len(delta_t_left_foot))
