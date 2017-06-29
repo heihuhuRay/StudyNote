@@ -170,7 +170,7 @@ PatternOsc1 = RG_Patterns(17.5,17.5,1,0.05)
 PatternOsc2 = RG_Patterns(10,10,1,0.1) 
 PatternOsc3 = RG_Patterns(2,10,1,0.1) # This is a smooth patern 
 PatternOsc4 = RG_Patterns(1.5,10,1,0.1) 
-PatternOsc_faster_walking = RG_Patterns(5, 23.5, 1, 0.05) #sigma_s range [13, 23]
+PatternOsc_faster_walking = RG_Patterns(13, 13, 1, 0.05) #2nd parameter: sigma_s range [13, 23]
 
 PatternOsc = PatternOsc_faster_walking
 
@@ -183,7 +183,7 @@ PatternOsc = PatternOsc_faster_walking
    |     ------------
    |   /
    |  / 
-   | /
+   | /f
    ------------------------> 
  """
 PatternPL1 = RG_Patterns(5,0.1,1,0.1)
@@ -348,7 +348,7 @@ def filter_data(data_to_filter):
     return data_after_filter
     
 def update_FRS_time_list(FSR_value):
-    if(len(left_foot_time_list) == len(FSR_list_left_foot) and len(FSR_list_left_foot) <= 100):
+    if(len(left_foot_time_list) == len(FSR_list_left_foot) and len(FSR_list_left_foot) <= 150):
         del left_foot_time_list[0]
         del FSR_list_left_foot[0]
         # record the time_axis
@@ -371,7 +371,7 @@ def mark_hit_timestamp(fsr_temp_list):
         diff_list.append(diff)
         
     for i in range(1, len(diff_list)):
-        if((diff_list[i-1] > 0) and (diff_list[i] < 0) and fsr_temp_list[i] > 0.8):
+        if((diff_list[i-1] > 0) and (diff_list[i] < 0) and fsr_temp_list[i] > 0.9):
             # it is a peak
             index_list.append(i) 
     return index_list
@@ -394,6 +394,7 @@ def calc_frequency(index_temp_list, temp_time_list):
     mean_diff = np.mean(diff_list)
     f = 1/mean_diff
     print("real time frequency :", f)
+    return f
 
 def calc_mean_sensor_value(parameter_list, parameter_num):
     sum_sensor_value = 0
@@ -409,8 +410,8 @@ while True:
     # record the FSR_axis
     FSR_list_left_foot.append(mean_value_left_foot)
 
-    if (len(FSR_list_left_foot) == 100):
-        TextObj.say('already 100 data, please touch my haed to continue')
+    if (len(FSR_list_left_foot) == 150):
+        TextObj.say('already 150 data, please touch my haed to continue')
         break
 while True:
     MiddleTactileON = memProxy.getData('Device/SubDeviceList/Head/Touch/Middle/Sensor/Value')
@@ -424,6 +425,7 @@ while True:
 MAT_Iinj = []
 num_loop_times = 1
 start_time = time.time()
+f = 0
 for I in range(0, int(myT.N_Loop/15)):
     t = I*myT.T
     #print("****** I = ", I)
@@ -454,21 +456,37 @@ for I in range(0, int(myT.N_Loop/15)):
     #L_SHOULDER_PITCH , L_SHOULDER_ROLL,
     for ii in [ L_HIP_ROLL, L_ANKLE_ROLL]:
         myCont[ii].RG.F.InjCurrent_value = +1*ExtInjCurr* myCont[ii].RG.F.InjCurrent_MultiplicationFactor
-        myCont[ii].RG.E.InjCurrent_value =  -1*ExtInjCurr* myCont[ii].RG.E.InjCurrent_MultiplicationFactor
+        myCont[ii].
+        RG.E.InjCurrent_value =  -1*ExtInjCurr* myCont[ii].RG.E.InjCurrent_MultiplicationFactor
+        if (f > 0.8):
+            myCont[ii].RG.F.sigma_s = 19 
+            myCont[ii].RG.E.sigma_s = 19
+
     #R_SHOULDER_PITCH, R_SHOULDER_ROLL,
     for ii in [ R_HIP_ROLL, R_ANKLE_ROLL]:
         myCont[ii].RG.F.InjCurrent_value = -1*ExtInjCurr* myCont[ii].RG.F.InjCurrent_MultiplicationFactor
-        myCont[ii].RG.E.InjCurrent_value = +1*ExtInjCurr* myCont[ii].RG.E.InjCurrent_MultiplicationFactor
-
+        myCont[ii].
+        RG.E.InjCurrent_value = +1*ExtInjCurr* myCont[ii].RG.E.InjCurrent_MultiplicationFactor
+        if (f > 0.8):
+            myCont[ii].RG.F.sigma_s = 19 
+            myCont[ii].RG.E.sigma_s = 19
 
     for ii in [R_HIP_PITCH, R_KNEE_PITCH, L_ANKLE_PITCH]:
         myCont[ii].RG.F.InjCurrent_value = +1*ExtInjCurr2* myCont[ii].RG.F.InjCurrent_MultiplicationFactor
-        myCont[ii].RG.E.InjCurrent_value =  -1*ExtInjCurr2* myCont[ii].RG.E.InjCurrent_MultiplicationFactor
+        myCont[ii].
+        RG.E.InjCurrent_value =  -1*ExtInjCurr2* myCont[ii].RG.E.InjCurrent_MultiplicationFactor
+        if (f > 0.8):
+            myCont[ii].RG.F.sigma_s = 19 
+            myCont[ii].RG.E.sigma_s = 19
 
     for ii in [L_HIP_PITCH, L_KNEE_PITCH, R_ANKLE_PITCH]:
         myCont[ii].RG.F.InjCurrent_value = -1*ExtInjCurr2* myCont[ii].RG.F.InjCurrent_MultiplicationFactor
-        myCont[ii].RG.E.InjCurrent_value = +1*ExtInjCurr2* myCont[ii].RG.E.InjCurrent_MultiplicationFactor
-    
+        myCont[ii].
+        RG.E.InjCurrent_value = +1*ExtInjCurr2* myCont[ii].RG.E.InjCurrent_MultiplicationFactor
+        if (f > 0.8):
+            myCont[ii].RG.F.sigma_s = 19 
+            myCont[ii].RG.E.sigma_s = 19
+
     for i in [L_HIP_ROLL, L_ANKLE_ROLL,R_HIP_ROLL, R_ANKLE_ROLL,R_HIP_PITCH, R_KNEE_PITCH, L_ANKLE_PITCH,L_HIP_PITCH, L_KNEE_PITCH, R_ANKLE_PITCH]:
         myCont[i].fUpdateLocomotionNetwork(myT,CurPos[i])
 
@@ -496,7 +514,7 @@ for I in range(0, int(myT.N_Loop/15)):
     data_after_filt = filter_data(FSR_list_left_foot)
     index_list = mark_hit_timestamp(data_after_filt)
     # print real time frequency
-    calc_frequency(index_list, left_foot_time_list)
+    f = calc_frequency(index_list, left_foot_time_list)
     
     angle_left_knee_pitch = CurPos[11] # 11 means L_Knee_Pitch, refer to CurPos,
     angle_right_knee_pitch = CurPos[17] # Note! Starting from 0
