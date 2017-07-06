@@ -375,7 +375,7 @@ def mark_hit_timestamp(fsr_temp_list):
         diff_list.append(diff)
         
     for i in range(1, len(diff_list)):
-        if((diff_list[i-1] > 0) and (diff_list[i] < 0) and fsr_temp_list[i] > 0.9):
+        if((diff_list[i-1] > 0) and (diff_list[i] < 0) and fsr_temp_list[i] > 1.5):
             # it is a peak
             index_list.append(i) 
     return index_list
@@ -659,7 +659,6 @@ for I in range(0, int(myT.N_Loop/15)):
 ##############################
 
 mean_frequency = np.mean(frequency_list)
-print("final frequency:", mean_value_left_foot) 
 postObj.goToPosture("Crouch",0.8)
 time.sleep(2)
 movObj.setStiffnesses('Body',0.0)
@@ -691,17 +690,21 @@ delta_t_right_foot = calc_delta_t(right_foot_time_list)
 delta_t_left_knee_pitch = calc_delta_t(left_knee_time_list)
 delta_t_right_knee_pitch = calc_delta_t(right_knee_time_list)
 
-print('index_list', index_list)
-calc_frequency(index_list, left_foot_time_list)
-draw_plot(left_foot_time_list, FSR_list_left_foot)
-draw_plot(left_foot_time_list, filter_data(FSR_list_left_foot))
+#print('index_list', index_list)
+#calc_frequency(index_list, left_foot_time_list)
+#draw_plot(left_foot_time_list, FSR_list_left_foot)
+#draw_plot(left_foot_time_list, filter_data(FSR_list_left_foot))
 
 plt.plot(whole_duration_FSR_time[1], whole_duration_FSR_time[0], 'ob-', label = 'rare data')
 plt.plot(whole_duration_FSR_time[1], filter_data(whole_duration_FSR_time[0]), 'og-', label = "filter data")
 plt.show()
 
-total_steps = mark_hit_timestamp(filter_data(whole_duration_FSR_time[0])
-#print('total how many steps:', total_steps)
+
+total_steps = mark_hit_timestamp(filter_data(whole_duration_FSR_time[0]))
+whole_frequency = calc_frequency(total_steps, whole_duration_FSR_time[1])
+print("mean frequency:", mean_value_left_foot)
+print("whole frequency :", whole_frequency)
+print('total steps:', len(total_steps))
 
 
 '''
