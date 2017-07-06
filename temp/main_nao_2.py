@@ -174,7 +174,7 @@ PatternOsc1 = RG_Patterns(17.5,17.5,1,0.05)
 PatternOsc2 = RG_Patterns(10,10,1,0.1) 
 PatternOsc3 = RG_Patterns(2,10,1,0.1) # This is a smooth patern 
 PatternOsc4 = RG_Patterns(1.5,10,1,0.1) 
-PatternOsc_faster_walking = RG_Patterns(5, 5, 1, 0.05) #2nd parameter: sigma_s range [13, 23]
+PatternOsc_faster_walking = RG_Patterns(5, 8, 1, 0.05) #2nd parameter: sigma_s range [13, 23]
 
 PatternOsc = PatternOsc_faster_walking
 
@@ -375,7 +375,7 @@ def mark_hit_timestamp(fsr_temp_list):
         diff_list.append(diff)
         
     for i in range(1, len(diff_list)):
-        if((diff_list[i-1] > 0) and (diff_list[i] < 0) and fsr_temp_list[i] > 1.5):
+        if((diff_list[i-1] > 0) and (diff_list[i] < 0) and fsr_temp_list[i] > 1.7):
             # it is a peak
             index_list.append(i) 
     return index_list
@@ -698,6 +698,7 @@ delta_t_right_knee_pitch = calc_delta_t(right_knee_time_list)
 plt.plot(whole_duration_FSR_time[1], whole_duration_FSR_time[0], 'ob-', label = 'rare data')
 plt.plot(whole_duration_FSR_time[1], filter_data(whole_duration_FSR_time[0]), 'og-', label = "filter data")
 plt.show()
+#plt.savefig('E:/StudyMaterials/MachineLearning_Group/temp/Mapping_Frequency_Sigma_s/unit1/test.png', dpi = 72)
 
 
 total_steps = mark_hit_timestamp(filter_data(whole_duration_FSR_time[0]))
