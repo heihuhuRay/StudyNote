@@ -170,7 +170,7 @@ PatternOsc1 = RG_Patterns(17.5,17.5,1,0.05)
 PatternOsc2 = RG_Patterns(10,10,1,0.1) 
 PatternOsc3 = RG_Patterns(2,10,1,0.1) # This is a smooth patern 
 PatternOsc4 = RG_Patterns(1.5,10,1,0.1) 
-PatternOsc_faster_walking = RG_Patterns(13, 13, 1, 0.05) #2nd parameter: sigma_s range [13, 23]
+PatternOsc_faster_walking = RG_Patterns(5, 5, 1, 0.05) #2nd parameter: sigma_s range [13, 23]
 
 PatternOsc = PatternOsc_faster_walking
 
@@ -456,36 +456,20 @@ for I in range(0, int(myT.N_Loop/15)):
     #L_SHOULDER_PITCH , L_SHOULDER_ROLL,
     for ii in [ L_HIP_ROLL, L_ANKLE_ROLL]:
         myCont[ii].RG.F.InjCurrent_value = +1*ExtInjCurr* myCont[ii].RG.F.InjCurrent_MultiplicationFactor
-        myCont[ii].
-        RG.E.InjCurrent_value =  -1*ExtInjCurr* myCont[ii].RG.E.InjCurrent_MultiplicationFactor
-        if (f > 0.8):
-            myCont[ii].RG.F.sigma_s = 19 
-            myCont[ii].RG.E.sigma_s = 19
+        myCont[ii].RG.E.InjCurrent_value =  -1*ExtInjCurr* myCont[ii].RG.E.InjCurrent_MultiplicationFactor
 
     #R_SHOULDER_PITCH, R_SHOULDER_ROLL,
     for ii in [ R_HIP_ROLL, R_ANKLE_ROLL]:
         myCont[ii].RG.F.InjCurrent_value = -1*ExtInjCurr* myCont[ii].RG.F.InjCurrent_MultiplicationFactor
-        myCont[ii].
-        RG.E.InjCurrent_value = +1*ExtInjCurr* myCont[ii].RG.E.InjCurrent_MultiplicationFactor
-        if (f > 0.8):
-            myCont[ii].RG.F.sigma_s = 19 
-            myCont[ii].RG.E.sigma_s = 19
+        myCont[ii].RG.E.InjCurrent_value = +1*ExtInjCurr* myCont[ii].RG.E.InjCurrent_MultiplicationFactor
 
     for ii in [R_HIP_PITCH, R_KNEE_PITCH, L_ANKLE_PITCH]:
         myCont[ii].RG.F.InjCurrent_value = +1*ExtInjCurr2* myCont[ii].RG.F.InjCurrent_MultiplicationFactor
-        myCont[ii].
-        RG.E.InjCurrent_value =  -1*ExtInjCurr2* myCont[ii].RG.E.InjCurrent_MultiplicationFactor
-        if (f > 0.8):
-            myCont[ii].RG.F.sigma_s = 19 
-            myCont[ii].RG.E.sigma_s = 19
+        myCont[ii].RG.E.InjCurrent_value =  -1*ExtInjCurr2* myCont[ii].RG.E.InjCurrent_MultiplicationFactor
 
     for ii in [L_HIP_PITCH, L_KNEE_PITCH, R_ANKLE_PITCH]:
         myCont[ii].RG.F.InjCurrent_value = -1*ExtInjCurr2* myCont[ii].RG.F.InjCurrent_MultiplicationFactor
-        myCont[ii].
-        RG.E.InjCurrent_value = +1*ExtInjCurr2* myCont[ii].RG.E.InjCurrent_MultiplicationFactor
-        if (f > 0.8):
-            myCont[ii].RG.F.sigma_s = 19 
-            myCont[ii].RG.E.sigma_s = 19
+        myCont[ii].RG.E.InjCurrent_value = +1*ExtInjCurr2* myCont[ii].RG.E.InjCurrent_MultiplicationFactor
 
     for i in [L_HIP_ROLL, L_ANKLE_ROLL,R_HIP_ROLL, R_ANKLE_ROLL,R_HIP_PITCH, R_KNEE_PITCH, L_ANKLE_PITCH,L_HIP_PITCH, L_KNEE_PITCH, R_ANKLE_PITCH]:
         myCont[i].fUpdateLocomotionNetwork(myT,CurPos[i])
