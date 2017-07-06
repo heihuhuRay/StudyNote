@@ -40,6 +40,9 @@ right_foot_time_list = []
 left_knee_time_list = []
 right_knee_time_list = []
 left_foot_hit_timestamp_list = []
+fsr = []
+f_time = []
+whole_duration_FSR_time = [fsr, f_time]
 
 total_left_FSR_dir_list = ['Device/SubDeviceList/LFoot/FSR/TotalWeight/Sensor/Value']
 total_right_FSR_dir_list = ['Device/SubDeviceList/RFoot/FSR/TotalWeight/Sensor/Value']
@@ -47,6 +50,7 @@ total_right_FSR_dir_list = ['Device/SubDeviceList/RFoot/FSR/TotalWeight/Sensor/V
 FSR_list_left_foot = []
 FSR_list_right_foot = []
 temp_FSR_time_list = []
+frequency_list = []
 #################################################################################################################################
 ####################################### My variables ############################################################################
 #################################################################################################################################
@@ -348,7 +352,7 @@ def filter_data(data_to_filter):
     return data_after_filter
     
 def update_FRS_time_list(FSR_value):
-    if(len(left_foot_time_list) == len(FSR_list_left_foot) and len(FSR_list_left_foot) <= 150):
+    if(len(left_foot_time_list) == len(FSR_list_left_foot) and len(FSR_list_left_foot) <= 250):
         del left_foot_time_list[0]
         del FSR_list_left_foot[0]
         # record the time_axis
@@ -410,8 +414,8 @@ while True:
     # record the FSR_axis
     FSR_list_left_foot.append(mean_value_left_foot)
 
-    if (len(FSR_list_left_foot) == 150):
-        TextObj.say('already 150 data, please touch my haed to continue')
+    if (len(FSR_list_left_foot) == 250):
+        TextObj.say('already 250 data, please touch my haed to continue')
         break
 while True:
     MiddleTactileON = memProxy.getData('Device/SubDeviceList/Head/Touch/Middle/Sensor/Value')
@@ -491,6 +495,11 @@ for I in range(0, int(myT.N_Loop/15)):
     mean_value_left_foot  = calc_mean_sensor_value(total_left_FSR_dir_list, 1)
     mean_value_right_foot = calc_mean_sensor_value(total_right_FSR_dir_list, 1)
     
+    # record in the whole durarion list
+    whole_duration_FSR_time[0].append(mean_value_left_foot)
+    whole_duration_FSR_time[1].append(time.time())
+
+
     # update the FSR&time list for left foot
     update_FRS_time_list(mean_value_left_foot)
 
@@ -499,7 +508,7 @@ for I in range(0, int(myT.N_Loop/15)):
     index_list = mark_hit_timestamp(data_after_filt)
     # print real time frequency
     f = calc_frequency(index_list, left_foot_time_list)
-    
+    frequency_list.append(f)
     angle_left_knee_pitch = CurPos[11] # 11 means L_Knee_Pitch, refer to CurPos,
     angle_right_knee_pitch = CurPos[17] # Note! Starting from 0
     ############################################################################################################################
@@ -649,6 +658,8 @@ for I in range(0, int(myT.N_Loop/15)):
 #print 'time diff: ', time_diff
 ##############################
 
+mean_frequency = np.mean(frequency_list)
+print("final frequency:", mean_value_left_foot) 
 postObj.goToPosture("Crouch",0.8)
 time.sleep(2)
 movObj.setStiffnesses('Body',0.0)
@@ -684,6 +695,15 @@ print('index_list', index_list)
 calc_frequency(index_list, left_foot_time_list)
 draw_plot(left_foot_time_list, FSR_list_left_foot)
 draw_plot(left_foot_time_list, filter_data(FSR_list_left_foot))
+
+plt.plot(whole_duration_FSR_time[1], whole_duration_FSR_time[0], 'ob-', label = 'rare data')
+plt.plot(whole_duration_FSR_time[1], filter_data(whole_duration_FSR_time[0]), 'og-', label = "filter data")
+plt.show()
+
+total_steps = mark_hit_timestamp(filter_data(whole_duration_FSR_time[0])
+#print('total how many steps:', total_steps)
+
+
 '''
 draw_plot(left_foot_time_list, FSR_list_left_foot)
 # draw the 2nd figure which is the filtered figure
