@@ -15,10 +15,14 @@ aws ec2 create-key-pair --key-name aws-key --query 'KeyMaterial' --output text >
 chmod 400 ~/.ssh/aws-key.pem
 
 export instanceId=`aws ec2 run-instances --image-id ami-b43d1ec7 --count 1 --instance-type p2.xlarge --key-name aws-key --security-group-ids $securityGroupId --subnet-id $subnetId --associate-public-ip-address --block-device-mapping "[ { \"DeviceName\": \"/dev/sda1\", \"Ebs\": { \"VolumeSize\": 128, \"VolumeType\": \"gp2\" } } ]" --query 'Instances[0].InstanceId' --output text`
+#                  aws ec2 run-instances --image-id ami-29ebb519 --security-group-ids sg-b018ced5 --count 1 --instance-type t2.micro --key-name devenv-key --query 'Instances[0].InstanceId'
+#"i-ec3e1e2k"
+#                  aws ec2 run-instances --image-id ami-b43d1ec7 --count 1 --instance-type p2.xlarge --key-name MyKeyPair --security-group-ids sg-e49b0e9c --subnet-id $subnetId
 #                  aws ec2 run-instances --image-id ami-b43d1ec7 --count 1 --instance-type p2.xlarge --key-name MyKeyPair --security-group-ids sg-e49b0e9c --subnet-id $subnetId --associate-public-ip-address --block-device-mapping "[ { \"DeviceName\": \"/dev/sda1\", \"Ebs\": { \"VolumeSize\": 128, \"VolumeType\": \"gp2\" } } ]" --query 'Instances[0].InstanceId' --output text
 #                  aws ec2 run-instances --image-id ami-xxxxxxxx --count 1 --instance-type t1.micro --key-name MyKeyPair --security-groups my-sg
 export allocAddr=`aws ec2 allocate-address --domain vpc --query 'AllocationId' --output text`
 
+#ssh -i MyKeyPair.pem ubuntu@54.229.218.16
 echo Waiting for instance start...
 aws ec2 wait instance-running --instance-ids $instanceId
 sleep 10 # wait for ssh service to start running too
